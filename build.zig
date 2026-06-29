@@ -56,9 +56,14 @@ pub fn build(b: *std.Build) void {
     kernel_exe.root_module.addImport("keystone", keystone_module);
     kernel_exe.setLinkerScript(b.path("kernel/linker.ld"));
     kernel_exe.root_module.code_model = .medany;
+    kernel_exe.entry = .{ .symbol_name = "_start" };
 
     const install_kernel = b.addInstallArtifact(kernel_exe, .{});
     b.getInstallStep().dependOn(&install_kernel.step);
+
+    const kernel_bin = b.addObjCopy(kernel_exe.getEmittedBin(), .{ .format = .bin });
+    const install_kernel_bin = b.addInstallBinFile(kernel_bin.getOutput(), "keystone-kernel-stub.bin");
+    b.getInstallStep().dependOn(&install_kernel_bin.step);
 
     // --- Example enclave application ---
     const enclave_exe = b.addExecutable(.{
@@ -72,9 +77,14 @@ pub fn build(b: *std.Build) void {
     enclave_exe.root_module.addImport("keystone", keystone_module);
     enclave_exe.setLinkerScript(b.path("enclave/linker.ld"));
     enclave_exe.root_module.code_model = .medany;
+    enclave_exe.entry = .{ .symbol_name = "_start" };
 
     const install_enclave = b.addInstallArtifact(enclave_exe, .{});
     b.getInstallStep().dependOn(&install_enclave.step);
+
+    const enclave_bin = b.addObjCopy(enclave_exe.getEmittedBin(), .{ .format = .bin });
+    const install_enclave_bin = b.addInstallBinFile(enclave_bin.getOutput(), "enclave-hello.bin");
+    b.getInstallStep().dependOn(&install_enclave_bin.step);
 
     // --- Host-side unit tests (PMP math, layout validation) ---
     const lib_tests = b.addTest(.{

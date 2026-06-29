@@ -7,8 +7,17 @@ MEMORY {
 
 SECTIONS {
     . = ORIGIN(ENCLAVE);
-    .text : { *(.text*) } > ENCLAVE
-    .rodata : { *(.rodata*) } > ENCLAVE
-    .data : { *(.data*) } > ENCLAVE
-    .bss : { *(.bss*) *(COMMON) } > ENCLAVE
+
+    .text : ALIGN(4) {
+        KEEP(*(.text._start))
+        KEEP(*(.text.start))
+        *(.text*)
+    } > ENCLAVE
+
+    .rodata : ALIGN(4) { *(.rodata*) } > ENCLAVE
+    .data : ALIGN(4) { *(.data*) } > ENCLAVE
+    .bss : ALIGN(4) {
+        *(.bss*)
+        *(COMMON)
+    } > ENCLAVE
 }

@@ -10,8 +10,8 @@ if ! command -v qemu-system-riscv64 >/dev/null 2>&1; then
 fi
 
 SM="${ZIG_OUT}/keystone-sm"
-KERNEL="${ZIG_OUT}/keystone-kernel-stub"
-ENCLAVE="${ZIG_OUT}/enclave-hello"
+KERNEL="${ZIG_OUT}/keystone-kernel-stub.bin"
+ENCLAVE="${ZIG_OUT}/enclave-hello.bin"
 
 for f in "$SM" "$KERNEL" "$ENCLAVE"; do
   [[ -f "$f" ]] || { echo "missing $f — run zig build" >&2; exit 1; }

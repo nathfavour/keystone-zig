@@ -70,6 +70,7 @@ export fn handleMachineTrap(regs_ptr: *trap_regs.TrapRegs) void {
     }
 
     uart.print("keystone-zig SM: trap mcause=0x{x}\r\n", .{mcause});
+    while (true) csr.wfi();
 }
 
 fn handleSbiEcall(regs: *trap_regs.TrapRegs) void {

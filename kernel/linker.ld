@@ -8,13 +8,15 @@ MEMORY {
 SECTIONS {
     . = ORIGIN(KERNEL);
 
-    .text : {
+    .text : ALIGN(4) {
+        KEEP(*(.text._start))
+        KEEP(*(.text.start))
         *(.text*)
     } > KERNEL
 
-    .rodata : { *(.rodata*) } > KERNEL
-    .data : { *(.data*) } > KERNEL
-    .bss : {
+    .rodata : ALIGN(4) { *(.rodata*) } > KERNEL
+    .data : ALIGN(4) { *(.data*) } > KERNEL
+    .bss : ALIGN(4) {
         *(.bss*)
         *(COMMON)
     } > KERNEL
