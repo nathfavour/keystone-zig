@@ -1,5 +1,6 @@
 .section .text.boot
 .global _start
+.global sm_stack_top
 .type _start, @function
 
 _start:
@@ -18,4 +19,4 @@ _stack_top:
 .align 16
 _sm_stack_bottom:
     .space  8192
-_sm_stack_top:
+sm_stack_top:

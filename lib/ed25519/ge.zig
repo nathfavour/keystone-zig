@@ -104,25 +104,25 @@ fn cmov(t: *GePrecomp, u: *const GePrecomp, b: u8) void {
 fn select(t: *GePrecomp, pos: usize, b: i8) void {
     var minust: GePrecomp = undefined;
     const bnegative = negative(b);
-    const babs: u8 = @intCast(b -% @as(i8, @intCast((@as(u8, @intCast(-%bnegative)) & @as(u8, @intCast(b))) << 1)));
+    const babs: i8 = @intCast(@as(i32, b) - 2 * @as(i32, @intCast(bnegative)) * @as(i32, b));
     fe.fe_1(&t.yplusx);
     fe.fe_1(&t.yminusx);
     fe.fe_0(&t.xy2d);
-    cmov(t, &precomp.base[pos][0], equal(@intCast(babs), 1));
-    cmov(t, &precomp.base[pos][1], equal(@intCast(babs), 2));
-    cmov(t, &precomp.base[pos][2], equal(@intCast(babs), 3));
-    cmov(t, &precomp.base[pos][3], equal(@intCast(babs), 4));
-    cmov(t, &precomp.base[pos][4], equal(@intCast(babs), 5));
-    cmov(t, &precomp.base[pos][5], equal(@intCast(babs), 6));
-    cmov(t, &precomp.base[pos][6], equal(@intCast(babs), 7));
-    cmov(t, &precomp.base[pos][7], equal(@intCast(babs), 8));
+    cmov(t, &precomp.base[pos][0], equal(babs, 1));
+    cmov(t, &precomp.base[pos][1], equal(babs, 2));
+    cmov(t, &precomp.base[pos][2], equal(babs, 3));
+    cmov(t, &precomp.base[pos][3], equal(babs, 4));
+    cmov(t, &precomp.base[pos][4], equal(babs, 5));
+    cmov(t, &precomp.base[pos][5], equal(babs, 6));
+    cmov(t, &precomp.base[pos][6], equal(babs, 7));
+    cmov(t, &precomp.base[pos][7], equal(babs, 8));
     fe.fe_copy(&minust.yplusx, t.yminusx);
     fe.fe_copy(&minust.yminusx, t.yplusx);
     fe.fe_neg(&minust.xy2d, t.xy2d);
     cmov(t, &minust, bnegative);
 }
 
-pub fn ge_scalarmult_base(h: *GeP3, a: [*]const u8) void {
+pub fn ge_scalarmult_base(h: *GeP3, a: []const u8) void {
     var e: [64]i8 = undefined;
     var carry: i8 = 0;
     var r: GeP1P1 = undefined;

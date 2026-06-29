@@ -1,17 +1,14 @@
 //! Scalar arithmetic mod l — port of `sc.c`.
 
-pub const Fe = [10]i32;
-
-
-fn load3(in: [*]const u8) u64 {
-    var result: u64 = @as(u64, in[0]);
+fn load3(in: []const u8) u64 {
+    var result: u64 = in[0];
     result |= @as(u64, in[1]) << 8;
     result |= @as(u64, in[2]) << 16;
     return result;
 }
 
-fn load4(in: [*]const u8) u64 {
-    var result: u64 = @as(u64, in[0]);
+fn load4(in: []const u8) u64 {
+    var result: u64 = in[0];
     result |= @as(u64, in[1]) << 8;
     result |= @as(u64, in[2]) << 16;
     result |= @as(u64, in[3]) << 24;
@@ -25,30 +22,30 @@ fn load4(in: [*]const u8) u64 {
 
 
 pub fn sc_reduce(s: []u8) void {
-    var s0: i64 = 2097151 & load3(s);
-    var s1: i64 = 2097151 & (load4(s + 2) >> 5);
-    var s2: i64 = 2097151 & (load3(s + 5) >> 2);
-    var s3: i64 = 2097151 & (load4(s + 7) >> 7);
-    var s4: i64 = 2097151 & (load4(s + 10) >> 4);
-    var s5: i64 = 2097151 & (load3(s + 13) >> 1);
-    var s6: i64 = 2097151 & (load4(s + 15) >> 6);
-    var s7: i64 = 2097151 & (load3(s + 18) >> 3);
-    var s8: i64 = 2097151 & load3(s + 21);
-    var s9: i64 = 2097151 & (load4(s + 23) >> 5);
-    var s10: i64 = 2097151 & (load3(s + 26) >> 2);
-    var s11: i64 = 2097151 & (load4(s + 28) >> 7);
-    var s12: i64 = 2097151 & (load4(s + 31) >> 4);
-    var s13: i64 = 2097151 & (load3(s + 34) >> 1);
-    var s14: i64 = 2097151 & (load4(s + 36) >> 6);
-    var s15: i64 = 2097151 & (load3(s + 39) >> 3);
-    var s16: i64 = 2097151 & load3(s + 42);
-    var s17: i64 = 2097151 & (load4(s + 44) >> 5);
-    var s18: i64 = 2097151 & (load3(s + 47) >> 2);
-    var s19: i64 = 2097151 & (load4(s + 49) >> 7);
-    var s20: i64 = 2097151 & (load4(s + 52) >> 4);
-    var s21: i64 = 2097151 & (load3(s + 55) >> 1);
-    var s22: i64 = 2097151 & (load4(s + 57) >> 6);
-    var s23: i64 = (load4(s + 60) >> 3);
+    var s0: i64 = @as(i64, @intCast(2097151 & load3(s)));
+    var s1: i64 = @as(i64, @intCast(2097151 & (load4(s[2..]) >> 5)));
+    var s2: i64 = @as(i64, @intCast(2097151 & (load3(s[5..]) >> 2)));
+    var s3: i64 = @as(i64, @intCast(2097151 & (load4(s[7..]) >> 7)));
+    var s4: i64 = @as(i64, @intCast(2097151 & (load4(s[10..]) >> 4)));
+    var s5: i64 = @as(i64, @intCast(2097151 & (load3(s[13..]) >> 1)));
+    var s6: i64 = @as(i64, @intCast(2097151 & (load4(s[15..]) >> 6)));
+    var s7: i64 = @as(i64, @intCast(2097151 & (load3(s[18..]) >> 3)));
+    var s8: i64 = @as(i64, @intCast(2097151 & load3(s[21..])));
+    var s9: i64 = @as(i64, @intCast(2097151 & (load4(s[23..]) >> 5)));
+    var s10: i64 = @as(i64, @intCast(2097151 & (load3(s[26..]) >> 2)));
+    var s11: i64 = @as(i64, @intCast(2097151 & (load4(s[28..]) >> 7)));
+    var s12: i64 = @as(i64, @intCast(2097151 & (load4(s[31..]) >> 4)));
+    var s13: i64 = @as(i64, @intCast(2097151 & (load3(s[34..]) >> 1)));
+    var s14: i64 = @as(i64, @intCast(2097151 & (load4(s[36..]) >> 6)));
+    var s15: i64 = @as(i64, @intCast(2097151 & (load3(s[39..]) >> 3)));
+    var s16: i64 = @as(i64, @intCast(2097151 & load3(s[42..])));
+    var s17: i64 = @as(i64, @intCast(2097151 & (load4(s[44..]) >> 5)));
+    var s18: i64 = @as(i64, @intCast(2097151 & (load3(s[47..]) >> 2)));
+    var s19: i64 = @as(i64, @intCast(2097151 & (load4(s[49..]) >> 7)));
+    var s20: i64 = @as(i64, @intCast(2097151 & (load4(s[52..]) >> 4)));
+    var s21: i64 = @as(i64, @intCast(2097151 & (load3(s[55..]) >> 1)));
+    var s22: i64 = @as(i64, @intCast(2097151 & (load4(s[57..]) >> 6)));
+    var s23: i64 = @as(i64, @intCast(load4(s[60..]) >> 3));
     var carry0: i64 = undefined;
     var carry1: i64 = undefined;
     var carry2: i64 = undefined;
@@ -304,81 +301,81 @@ pub fn sc_reduce(s: []u8) void {
     s11 += carry10;
     s10 -= carry10 << 21;
 
-    s[0] = @as(u8, @truncate(s0 >> 0));
-    s[1] = @as(u8, @truncate(s0 >> 8));
-    s[2] = @as(u8, @truncate((s0 >> 16) | (s1 << 5)));
-    s[3] = @as(u8, @truncate(s1 >> 3));
-    s[4] = @as(u8, @truncate(s1 >> 11));
-    s[5] = @as(u8, @truncate((s1 >> 19) | (s2 << 2)));
-    s[6] = @as(u8, @truncate(s2 >> 6));
-    s[7] = @as(u8, @truncate((s2 >> 14) | (s3 << 7)));
-    s[8] = @as(u8, @truncate(s3 >> 1));
-    s[9] = @as(u8, @truncate(s3 >> 9));
-    s[10] = @as(u8, @truncate((s3 >> 17) | (s4 << 4)));
-    s[11] = @as(u8, @truncate(s4 >> 4));
-    s[12] = @as(u8, @truncate(s4 >> 12));
-    s[13] = @as(u8, @truncate((s4 >> 20) | (s5 << 1)));
-    s[14] = @as(u8, @truncate(s5 >> 7));
-    s[15] = @as(u8, @truncate((s5 >> 15) | (s6 << 6)));
-    s[16] = @as(u8, @truncate(s6 >> 2));
-    s[17] = @as(u8, @truncate(s6 >> 10));
-    s[18] = @as(u8, @truncate((s6 >> 18) | (s7 << 3)));
-    s[19] = @as(u8, @truncate(s7 >> 5));
-    s[20] = @as(u8, @truncate(s7 >> 13));
-    s[21] = @as(u8, @truncate(s8 >> 0));
-    s[22] = @as(u8, @truncate(s8 >> 8));
-    s[23] = @as(u8, @truncate((s8 >> 16) | (s9 << 5)));
-    s[24] = @as(u8, @truncate(s9 >> 3));
-    s[25] = @as(u8, @truncate(s9 >> 11));
-    s[26] = @as(u8, @truncate((s9 >> 19) | (s10 << 2)));
-    s[27] = @as(u8, @truncate(s10 >> 6));
-    s[28] = @as(u8, @truncate((s10 >> 14) | (s11 << 7)));
-    s[29] = @as(u8, @truncate(s11 >> 1));
-    s[30] = @as(u8, @truncate(s11 >> 9));
-    s[31] = @as(u8, @truncate(s11 >> 17));
+    s[0] = @as(u8, @truncate(@as(u64, @intCast(s0)) >> 0));
+    s[1] = @as(u8, @truncate(@as(u64, @intCast(s0)) >> 8));
+    s[2] = @as(u8, @truncate((@as(u64, @intCast(s0)) >> 16) | (@as(u64, @intCast(s1)) << 5)));
+    s[3] = @as(u8, @truncate(@as(u64, @intCast(s1)) >> 3));
+    s[4] = @as(u8, @truncate(@as(u64, @intCast(s1)) >> 11));
+    s[5] = @as(u8, @truncate((@as(u64, @intCast(s1)) >> 19) | (@as(u64, @intCast(s2)) << 2)));
+    s[6] = @as(u8, @truncate(@as(u64, @intCast(s2)) >> 6));
+    s[7] = @as(u8, @truncate((@as(u64, @intCast(s2)) >> 14) | (@as(u64, @intCast(s3)) << 7)));
+    s[8] = @as(u8, @truncate(@as(u64, @intCast(s3)) >> 1));
+    s[9] = @as(u8, @truncate(@as(u64, @intCast(s3)) >> 9));
+    s[10] = @as(u8, @truncate((@as(u64, @intCast(s3)) >> 17) | (@as(u64, @intCast(s4)) << 4)));
+    s[11] = @as(u8, @truncate(@as(u64, @intCast(s4)) >> 4));
+    s[12] = @as(u8, @truncate(@as(u64, @intCast(s4)) >> 12));
+    s[13] = @as(u8, @truncate((@as(u64, @intCast(s4)) >> 20) | (@as(u64, @intCast(s5)) << 1)));
+    s[14] = @as(u8, @truncate(@as(u64, @intCast(s5)) >> 7));
+    s[15] = @as(u8, @truncate((@as(u64, @intCast(s5)) >> 15) | (@as(u64, @intCast(s6)) << 6)));
+    s[16] = @as(u8, @truncate(@as(u64, @intCast(s6)) >> 2));
+    s[17] = @as(u8, @truncate(@as(u64, @intCast(s6)) >> 10));
+    s[18] = @as(u8, @truncate((@as(u64, @intCast(s6)) >> 18) | (@as(u64, @intCast(s7)) << 3)));
+    s[19] = @as(u8, @truncate(@as(u64, @intCast(s7)) >> 5));
+    s[20] = @as(u8, @truncate(@as(u64, @intCast(s7)) >> 13));
+    s[21] = @as(u8, @truncate(@as(u64, @intCast(s8)) >> 0));
+    s[22] = @as(u8, @truncate(@as(u64, @intCast(s8)) >> 8));
+    s[23] = @as(u8, @truncate((@as(u64, @intCast(s8)) >> 16) | (@as(u64, @intCast(s9)) << 5)));
+    s[24] = @as(u8, @truncate(@as(u64, @intCast(s9)) >> 3));
+    s[25] = @as(u8, @truncate(@as(u64, @intCast(s9)) >> 11));
+    s[26] = @as(u8, @truncate((@as(u64, @intCast(s9)) >> 19) | (@as(u64, @intCast(s10)) << 2)));
+    s[27] = @as(u8, @truncate(@as(u64, @intCast(s10)) >> 6));
+    s[28] = @as(u8, @truncate((@as(u64, @intCast(s10)) >> 14) | (@as(u64, @intCast(s11)) << 7)));
+    s[29] = @as(u8, @truncate(@as(u64, @intCast(s11)) >> 1));
+    s[30] = @as(u8, @truncate(@as(u64, @intCast(s11)) >> 9));
+    s[31] = @as(u8, @truncate(@as(u64, @intCast(s11)) >> 17));
 }
 
 
 
 
 
-pub fn sc_muladd(s: []u8, a: [*]const u8, b: [*]const u8, c: [*]const u8) void {
-    const a0: i64 = 2097151 & load3(a);
-    const a1: i64 = 2097151 & (load4(a + 2) >> 5);
-    const a2: i64 = 2097151 & (load3(a + 5) >> 2);
-    const a3: i64 = 2097151 & (load4(a + 7) >> 7);
-    const a4: i64 = 2097151 & (load4(a + 10) >> 4);
-    const a5: i64 = 2097151 & (load3(a + 13) >> 1);
-    const a6: i64 = 2097151 & (load4(a + 15) >> 6);
-    const a7: i64 = 2097151 & (load3(a + 18) >> 3);
-    const a8: i64 = 2097151 & load3(a + 21);
-    const a9: i64 = 2097151 & (load4(a + 23) >> 5);
-    const a10: i64 = 2097151 & (load3(a + 26) >> 2);
-    const a11: i64 = (load4(a + 28) >> 7);
-    const b0: i64 = 2097151 & load3(b);
-    const b1: i64 = 2097151 & (load4(b + 2) >> 5);
-    const b2: i64 = 2097151 & (load3(b + 5) >> 2);
-    const b3: i64 = 2097151 & (load4(b + 7) >> 7);
-    const b4: i64 = 2097151 & (load4(b + 10) >> 4);
-    const b5: i64 = 2097151 & (load3(b + 13) >> 1);
-    const b6: i64 = 2097151 & (load4(b + 15) >> 6);
-    const b7: i64 = 2097151 & (load3(b + 18) >> 3);
-    const b8: i64 = 2097151 & load3(b + 21);
-    const b9: i64 = 2097151 & (load4(b + 23) >> 5);
-    const b10: i64 = 2097151 & (load3(b + 26) >> 2);
-    const b11: i64 = (load4(b + 28) >> 7);
-    const c0: i64 = 2097151 & load3(c);
-    const c1: i64 = 2097151 & (load4(c + 2) >> 5);
-    const c2: i64 = 2097151 & (load3(c + 5) >> 2);
-    const c3: i64 = 2097151 & (load4(c + 7) >> 7);
-    const c4: i64 = 2097151 & (load4(c + 10) >> 4);
-    const c5: i64 = 2097151 & (load3(c + 13) >> 1);
-    const c6: i64 = 2097151 & (load4(c + 15) >> 6);
-    const c7: i64 = 2097151 & (load3(c + 18) >> 3);
-    const c8: i64 = 2097151 & load3(c + 21);
-    const c9: i64 = 2097151 & (load4(c + 23) >> 5);
-    const c10: i64 = 2097151 & (load3(c + 26) >> 2);
-    const c11: i64 = (load4(c + 28) >> 7);
+pub fn sc_muladd(s: []u8, a: []const u8, b: []const u8, c: []const u8) void {
+    const a0: i64 = @as(i64, @intCast(2097151 & load3(a)));
+    const a1: i64 = @as(i64, @intCast(2097151 & (load4(a[2..]) >> 5)));
+    const a2: i64 = @as(i64, @intCast(2097151 & (load3(a[5..]) >> 2)));
+    const a3: i64 = @as(i64, @intCast(2097151 & (load4(a[7..]) >> 7)));
+    const a4: i64 = @as(i64, @intCast(2097151 & (load4(a[10..]) >> 4)));
+    const a5: i64 = @as(i64, @intCast(2097151 & (load3(a[13..]) >> 1)));
+    const a6: i64 = @as(i64, @intCast(2097151 & (load4(a[15..]) >> 6)));
+    const a7: i64 = @as(i64, @intCast(2097151 & (load3(a[18..]) >> 3)));
+    const a8: i64 = @as(i64, @intCast(2097151 & load3(a[21..])));
+    const a9: i64 = @as(i64, @intCast(2097151 & (load4(a[23..]) >> 5)));
+    const a10: i64 = @as(i64, @intCast(2097151 & (load3(a[26..]) >> 2)));
+    const a11: i64 = @as(i64, @intCast(load4(a[28..]) >> 7));
+    const b0: i64 = @as(i64, @intCast(2097151 & load3(b)));
+    const b1: i64 = @as(i64, @intCast(2097151 & (load4(b[2..]) >> 5)));
+    const b2: i64 = @as(i64, @intCast(2097151 & (load3(b[5..]) >> 2)));
+    const b3: i64 = @as(i64, @intCast(2097151 & (load4(b[7..]) >> 7)));
+    const b4: i64 = @as(i64, @intCast(2097151 & (load4(b[10..]) >> 4)));
+    const b5: i64 = @as(i64, @intCast(2097151 & (load3(b[13..]) >> 1)));
+    const b6: i64 = @as(i64, @intCast(2097151 & (load4(b[15..]) >> 6)));
+    const b7: i64 = @as(i64, @intCast(2097151 & (load3(b[18..]) >> 3)));
+    const b8: i64 = @as(i64, @intCast(2097151 & load3(b[21..])));
+    const b9: i64 = @as(i64, @intCast(2097151 & (load4(b[23..]) >> 5)));
+    const b10: i64 = @as(i64, @intCast(2097151 & (load3(b[26..]) >> 2)));
+    const b11: i64 = @as(i64, @intCast(load4(b[28..]) >> 7));
+    const c0: i64 = @as(i64, @intCast(2097151 & load3(c)));
+    const c1: i64 = @as(i64, @intCast(2097151 & (load4(c[2..]) >> 5)));
+    const c2: i64 = @as(i64, @intCast(2097151 & (load3(c[5..]) >> 2)));
+    const c3: i64 = @as(i64, @intCast(2097151 & (load4(c[7..]) >> 7)));
+    const c4: i64 = @as(i64, @intCast(2097151 & (load4(c[10..]) >> 4)));
+    const c5: i64 = @as(i64, @intCast(2097151 & (load3(c[13..]) >> 1)));
+    const c6: i64 = @as(i64, @intCast(2097151 & (load4(c[15..]) >> 6)));
+    const c7: i64 = @as(i64, @intCast(2097151 & (load3(c[18..]) >> 3)));
+    const c8: i64 = @as(i64, @intCast(2097151 & load3(c[21..])));
+    const c9: i64 = @as(i64, @intCast(2097151 & (load4(c[23..]) >> 5)));
+    const c10: i64 = @as(i64, @intCast(2097151 & (load3(c[26..]) >> 2)));
+    const c11: i64 = @as(i64, @intCast(load4(c[28..]) >> 7));
     var s0: i64 = undefined;
     var s1: i64 = undefined;
     var s2: i64 = undefined;
@@ -757,37 +754,37 @@ pub fn sc_muladd(s: []u8, a: [*]const u8, b: [*]const u8, c: [*]const u8) void {
     s11 += carry10;
     s10 -= carry10 << 21;
 
-    s[0] = @as(u8, @truncate(s0 >> 0));
-    s[1] = @as(u8, @truncate(s0 >> 8));
-    s[2] = @as(u8, @truncate((s0 >> 16) | (s1 << 5)));
-    s[3] = @as(u8, @truncate(s1 >> 3));
-    s[4] = @as(u8, @truncate(s1 >> 11));
-    s[5] = @as(u8, @truncate((s1 >> 19) | (s2 << 2)));
-    s[6] = @as(u8, @truncate(s2 >> 6));
-    s[7] = @as(u8, @truncate((s2 >> 14) | (s3 << 7)));
-    s[8] = @as(u8, @truncate(s3 >> 1));
-    s[9] = @as(u8, @truncate(s3 >> 9));
-    s[10] = @as(u8, @truncate((s3 >> 17) | (s4 << 4)));
-    s[11] = @as(u8, @truncate(s4 >> 4));
-    s[12] = @as(u8, @truncate(s4 >> 12));
-    s[13] = @as(u8, @truncate((s4 >> 20) | (s5 << 1)));
-    s[14] = @as(u8, @truncate(s5 >> 7));
-    s[15] = @as(u8, @truncate((s5 >> 15) | (s6 << 6)));
-    s[16] = @as(u8, @truncate(s6 >> 2));
-    s[17] = @as(u8, @truncate(s6 >> 10));
-    s[18] = @as(u8, @truncate((s6 >> 18) | (s7 << 3)));
-    s[19] = @as(u8, @truncate(s7 >> 5));
-    s[20] = @as(u8, @truncate(s7 >> 13));
-    s[21] = @as(u8, @truncate(s8 >> 0));
-    s[22] = @as(u8, @truncate(s8 >> 8));
-    s[23] = @as(u8, @truncate((s8 >> 16) | (s9 << 5)));
-    s[24] = @as(u8, @truncate(s9 >> 3));
-    s[25] = @as(u8, @truncate(s9 >> 11));
-    s[26] = @as(u8, @truncate((s9 >> 19) | (s10 << 2)));
-    s[27] = @as(u8, @truncate(s10 >> 6));
-    s[28] = @as(u8, @truncate((s10 >> 14) | (s11 << 7)));
-    s[29] = @as(u8, @truncate(s11 >> 1));
-    s[30] = @as(u8, @truncate(s11 >> 9));
-    s[31] = @as(u8, @truncate(s11 >> 17));
+    s[0] = @as(u8, @truncate(@as(u64, @intCast(s0)) >> 0));
+    s[1] = @as(u8, @truncate(@as(u64, @intCast(s0)) >> 8));
+    s[2] = @as(u8, @truncate((@as(u64, @intCast(s0)) >> 16) | (@as(u64, @intCast(s1)) << 5)));
+    s[3] = @as(u8, @truncate(@as(u64, @intCast(s1)) >> 3));
+    s[4] = @as(u8, @truncate(@as(u64, @intCast(s1)) >> 11));
+    s[5] = @as(u8, @truncate((@as(u64, @intCast(s1)) >> 19) | (@as(u64, @intCast(s2)) << 2)));
+    s[6] = @as(u8, @truncate(@as(u64, @intCast(s2)) >> 6));
+    s[7] = @as(u8, @truncate((@as(u64, @intCast(s2)) >> 14) | (@as(u64, @intCast(s3)) << 7)));
+    s[8] = @as(u8, @truncate(@as(u64, @intCast(s3)) >> 1));
+    s[9] = @as(u8, @truncate(@as(u64, @intCast(s3)) >> 9));
+    s[10] = @as(u8, @truncate((@as(u64, @intCast(s3)) >> 17) | (@as(u64, @intCast(s4)) << 4)));
+    s[11] = @as(u8, @truncate(@as(u64, @intCast(s4)) >> 4));
+    s[12] = @as(u8, @truncate(@as(u64, @intCast(s4)) >> 12));
+    s[13] = @as(u8, @truncate((@as(u64, @intCast(s4)) >> 20) | (@as(u64, @intCast(s5)) << 1)));
+    s[14] = @as(u8, @truncate(@as(u64, @intCast(s5)) >> 7));
+    s[15] = @as(u8, @truncate((@as(u64, @intCast(s5)) >> 15) | (@as(u64, @intCast(s6)) << 6)));
+    s[16] = @as(u8, @truncate(@as(u64, @intCast(s6)) >> 2));
+    s[17] = @as(u8, @truncate(@as(u64, @intCast(s6)) >> 10));
+    s[18] = @as(u8, @truncate((@as(u64, @intCast(s6)) >> 18) | (@as(u64, @intCast(s7)) << 3)));
+    s[19] = @as(u8, @truncate(@as(u64, @intCast(s7)) >> 5));
+    s[20] = @as(u8, @truncate(@as(u64, @intCast(s7)) >> 13));
+    s[21] = @as(u8, @truncate(@as(u64, @intCast(s8)) >> 0));
+    s[22] = @as(u8, @truncate(@as(u64, @intCast(s8)) >> 8));
+    s[23] = @as(u8, @truncate((@as(u64, @intCast(s8)) >> 16) | (@as(u64, @intCast(s9)) << 5)));
+    s[24] = @as(u8, @truncate(@as(u64, @intCast(s9)) >> 3));
+    s[25] = @as(u8, @truncate(@as(u64, @intCast(s9)) >> 11));
+    s[26] = @as(u8, @truncate((@as(u64, @intCast(s9)) >> 19) | (@as(u64, @intCast(s10)) << 2)));
+    s[27] = @as(u8, @truncate(@as(u64, @intCast(s10)) >> 6));
+    s[28] = @as(u8, @truncate((@as(u64, @intCast(s10)) >> 14) | (@as(u64, @intCast(s11)) << 7)));
+    s[29] = @as(u8, @truncate(@as(u64, @intCast(s11)) >> 1));
+    s[30] = @as(u8, @truncate(@as(u64, @intCast(s11)) >> 9));
+    s[31] = @as(u8, @truncate(@as(u64, @intCast(s11)) >> 17));
 }
 

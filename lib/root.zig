@@ -13,6 +13,9 @@ pub const trap_regs = @import("trap_regs.zig");
 pub const thread = @import("thread.zig");
 pub const cpu = @import("cpu.zig");
 pub const mprv = @import("mprv.zig");
+pub const sha3 = @import("sha3.zig");
+pub const hmac_sha3 = @import("hmac_sha3.zig");
+pub const hkdf = @import("hkdf.zig");
 pub const crypto = @import("crypto.zig");
 pub const ed25519 = @import("ed25519.zig");
 
@@ -22,5 +25,6 @@ test {
     _ = sbi;
     _ = enclave;
     _ = layout;
+    _ = ed25519;
     @import("std").testing.refAllDecls(@This());
 }

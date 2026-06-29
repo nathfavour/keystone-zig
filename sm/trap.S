@@ -107,7 +107,7 @@ trapVectorEnclave:
     sd      t0, 2*8(sp)
     mv      a0, sp
     call    handleMachineTrap
-    la      t1, _sm_stack_top
+    la      t1, sm_stack_top
     csrw    mscratch, t1
     RESTORE_FRAME
     mret

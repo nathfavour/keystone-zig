@@ -37,7 +37,7 @@ Legend: `[x]` done · `[~]` partial/stub · `[ ]` not started
 | `sm_copy_key` / RoT keys | platform | `crypto.smInitKeys` stub | `[~]` |
 | `platform_init_global_once` | `platform-hook.h` | stub | `[ ]` |
 | `platform_init_global` | per-platform | stub | `[ ]` |
-| S-mode kernel handoff (`mret`) | OpenSBI | `enterSupervisor` | `[~]` QEMU mret debug |
+| S-mode kernel handoff (`mret`) | OpenSBI | `drop_to_supervisor` + PMP fix | `[x]` |
 | Enclave trap handler | `sbi_trap_handler_keystone_enclave` | via unified handler | `[~]` |
 
 ---
@@ -152,6 +152,15 @@ Legend: `[x]` done · `[~]` partial/stub · `[ ]` not started
 
 ## Crypto / attestation (`lib/crypto.zig` ← `crypto.c`, `attest.c`, `ed25519/`, `sha3/`)
 
+| Component | Status |
+|-----------|--------|
+| SHA3-512 (`lib/sha3.zig`) | `[x]` |
+| HMAC-SHA3-512 (`lib/hmac_sha3.zig`) | `[x]` |
+| HKDF-SHA3-512 (`lib/hkdf.zig`) | `[x]` |
+| Ed25519 sign (`lib/ed25519.zig`) | `[x]` |
+| Enclave EPM hash (`validateAndHashEnclave`) | `[x]` M-mode page reads |
+| Attestation report + sealing key | `[~]` wired, dev test keys |
+
 | Item | Status |
 |------|--------|
 | SHA3-512 measure enclave | `[ ]` |
@@ -224,7 +233,7 @@ Legend: `[x]` done · `[~]` partial/stub · `[ ]` not started
 |------|--------|
 | `zig build` SM + kernel + enclave | `[x]` |
 | `zig build test` host PMP tests | `[x]` |
-| `zig build qemu` smoke | `[~]` SM boots; S-mode `mret` handoff in progress |
+| `zig build qemu` smoke | `[~]` SM→kernel→create OK; run/exit in progress |
 | `objcopy` flat binaries | `[x]` |
 | CMocka SM unit tests port | `[ ]` |
 | RV32 support | `[ ]` |
@@ -245,7 +254,9 @@ Legend: `[x]` done · `[~]` partial/stub · `[ ]` not started
 
 ## Known gaps / next actions (priority)
 
-1. **[P0]** Fix QEMU S-mode entry — `mret` from `enterSupervisor` traps at SM PC; kernel image verified loaded at `0x80200000`.
+1. **[P0]** ~~Fix QEMU S-mode entry~~ — fixed: `PMP_A_NAPOT` encoding, explicit OSM in `drop.S`, `-m 512M`, `.bin` loaders.
+2. **[P0]** Enclave run/exit return to kernel (context switch / trap stack).
+3. **[P1]** Platform RoT keys (`sm_copy_key` / sanctum keys).
 2. **[P0]** End-to-end test: kernel `create` → `run` → enclave UART → `exit` → `destroy`.
 3. **[P1]** Port `mprv.S` block copies with PMP fault detection.
 4. **[P1]** Real SHA3-512 + Ed25519 (`crypto.zig` ← `sha3/`, `ed25519/`).

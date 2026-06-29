@@ -41,11 +41,10 @@ fn threadHostVector() void {
 }
 
 fn initTrapStack() void {
-    // mscratch = SM stack top; swapped with guest sp on each M-mode trap.
-    csr.write("mscratch", @intFromPtr(&_sm_stack_top));
+    csr.write("mscratch", @intFromPtr(&sm_stack_top));
 }
 
-extern _sm_stack_top: usize;
+extern var sm_stack_top: usize;
 
 fn delegateToSupervisor() void {
     // Kernel sets these once its trap vector is live.

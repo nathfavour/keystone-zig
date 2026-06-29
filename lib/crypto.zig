@@ -28,15 +28,10 @@ pub fn sign(sig: []u8, data: []const u8, _: usize) void {
 }
 
 fn hashExtendPage(ctx: *sha3.Sha3Ctx, page: usize) void {
-    var buf: [trap_regs.RISCV_PGSIZE]u8 = undefined;
-    const old = @import("csr.zig").read("mstatus");
-    const mstatus_mprv: usize = 1 << 17;
-    const mpp_s: usize = 1 << 11;
-    @import("csr.zig").write("mstatus", old | mstatus_mprv | mpp_s);
-    for (0..trap_regs.RISCV_PGSIZE) |i| {
+    var buf: [1 << trap_regs.RISCV_PGSHIFT]u8 = undefined;
+    for (0..buf.len) |i| {
         buf[i] = @as(*const volatile u8, @ptrFromInt(page + i)).*;
     }
-    @import("csr.zig").write("mstatus", old);
     sha3.update(ctx, &buf);
 }
 
@@ -51,10 +46,11 @@ fn validateAndHashEpm(enc: *enclave.Enclave) void {
     sha3.init(&ctx, sbi.MDSIZE);
     sha3.update(&ctx, std.mem.asBytes(&sizes));
 
+    const page_size = @as(usize, 1) << trap_regs.RISCV_PGSHIFT;
     var page = loader;
-    while (page < runtime) : (page += trap_regs.RISCV_PGSIZE) hashExtendPage(&ctx, page);
-    while (page < eapp) : (page += trap_regs.RISCV_PGSIZE) hashExtendPage(&ctx, page);
-    while (page < free) : (page += trap_regs.RISCV_PGSIZE) hashExtendPage(&ctx, page);
+    while (page < runtime) : (page += page_size) hashExtendPage(&ctx, page);
+    while (page < eapp) : (page += page_size) hashExtendPage(&ctx, page);
+    while (page < free) : (page += page_size) hashExtendPage(&ctx, page);
 
     sha3.final(&ctx, &enc.hash);
 }

@@ -1,5 +1,6 @@
 //! Ed25519 signing (SHA3-512) — port of `keystone/sm/src/ed25519/sign.c`.
 
+const std = @import("std");
 const sha3 = @import("sha3.zig");
 const sc = @import("ed25519/sc.zig");
 const ge = @import("ed25519/ge.zig");
@@ -24,7 +25,7 @@ pub fn sign(
     sha3.final(&hash, &r);
 
     sc.sc_reduce(&r);
-    ge.ge_scalarmult_base(&R, &r);
+    ge.ge_scalarmult_base(&R, r[0..32]);
     ge.ge_p3_tobytes(sig[0..32], &R);
 
     sha3.init(&hash, 64);
@@ -34,7 +35,17 @@ pub fn sign(
     sha3.final(&hash, &hram);
 
     sc.sc_reduce(&hram);
-    sc.sc_muladd(sig[32..64], &hram, private_key, &r);
+    sc.sc_muladd(sig[32..64], hram[0..32], private_key[0..32], r[0..32]);
+}
+
+test "sign smoke" {
+    var sig: [64]u8 = undefined;
+    const msg = "keystone";
+    const pk: [32]u8 = .{0x01} ** 32;
+    const sk: [64]u8 = .{0x02} ** 64;
+    sign(&sig, msg, &pk, &sk);
+    // R and S should be non-trivial for non-degenerate inputs.
+    try std.testing.expect(sig[0] != 0 or sig[32] != 0);
 }
 
 test {
