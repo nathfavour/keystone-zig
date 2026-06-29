@@ -6,7 +6,9 @@ drop_to_supervisor:
     csrw    mepc, a0
     mv      sp, a1
     csrw    satp, zero
-    # MPP = S-mode (01), MIE/MPIE = 0
     li      t0, (1 << 11)
     csrw    mstatus, t0
+    li      t2, 0x10000000
+    li      t3, 'D'
+    sb      t3, 0(t2)
     mret
