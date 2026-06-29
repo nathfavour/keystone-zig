@@ -76,11 +76,10 @@ pub fn build(b: *std.Build) void {
     b.getInstallStep().dependOn(&install_enclave.step);
 
     // --- Host-side unit tests (PMP math, layout validation) ---
-    const host_target = b.standardTargetOptions(.{});
     const lib_tests = b.addTest(.{
         .root_module = b.createModule(.{
             .root_source_file = b.path("lib/root.zig"),
-            .target = host_target,
+            .target = b.graph.host,
             .optimize = optimize,
         }),
     });
