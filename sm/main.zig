@@ -28,7 +28,7 @@ export fn smEntry() noreturn {
     delegateToSupervisor();
     threadHostVector();
 
-    const kernel_entry: *const fn () noreturn = @ptrFromInt(layout.qemu_virt.kernel_base);
+    const kernel_entry: *const fn () noreturn = @ptrFromInt(layout.qemu_virt.kernel_entry);
     uart.write("keystone-zig SM: entering S-mode kernel\r\n");
     enterSupervisor(kernel_entry);
 }

@@ -21,7 +21,7 @@ fn contextSwitchToEnclave(regs: *trap_regs.TrapRegs, eid: u32, load_parameters: 
     csr.write("mideleg", 0);
 
     if (load_parameters) {
-        regs.mepc = enc.params.dram_base - 4;
+        regs.mepc = enc.params.runtime_base -| 4;
         regs.mstatus = 1 << trap_regs.MSTATUS_MPP_SHIFT;
         regs.a1 = enc.params.dram_base;
         regs.a2 = enc.params.dram_size;

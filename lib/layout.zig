@@ -10,6 +10,7 @@ pub const qemu_virt = struct {
     pub const uart_size: usize = 0x1000;
 
     pub const kernel_base: usize = 0x8020_0000;
+    pub const kernel_entry: usize = 0x8021_59ba; // ELF _start — sync after linker changes
     pub const kernel_size: usize = 0x0100_0000;
 
     pub const enclave_pool_base: usize = 0x9000_0000;
