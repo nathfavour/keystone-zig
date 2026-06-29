@@ -1,4 +1,4 @@
-//! Minimal enclave runtime — parity with Eyrie entry (params in a1–a7 on first run).
+//! Minimal enclave runtime — parity with Eyrie entry.
 
 const keystone = @import("keystone");
 const sbi = keystone.sbi;
@@ -10,17 +10,15 @@ export fn _start() callconv(.naked) noreturn {
         \\ 1: wfi
         \\ j 1b
     );
-    unreachable;
 }
 
 export fn enclaveMain() void {
     uart.write("enclave-hello: secure bubble\r\n");
 
-    const ret = sbi.ecall(
+    _ = sbi.ecall(
         sbi.extension_id,
         @intFromEnum(sbi.Fid.exit_enclave),
         0,
         0, 0, 0, 0, 0,
     );
-    _ = ret;
 }

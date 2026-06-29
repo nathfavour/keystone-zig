@@ -77,26 +77,26 @@ fn handleSbiEcall(regs: *trap_regs.TrapRegs) void {
     const fid: u32 = @truncate(regs.a6);
 
     if (ext != sbi.extension_id) {
-        regs.a0 = @intFromEnum(sbi.Error.not_implemented);
+        setRegError(regs, .not_implemented);
         regs.a1 = 0;
         regs.mepc += 4;
         return;
     }
 
     if (fid <= sbi.fid_range_deprecated) {
-        regs.a0 = @intFromEnum(sbi.Error.not_implemented);
+        setRegError(regs, .not_implemented);
         regs.mepc += 4;
         return;
     }
 
     if (fid <= sbi.fid_range_host and cpu.isEnclaveContext()) {
-        regs.a0 = @intFromEnum(sbi.Error.sbi_prohibited);
+        setRegError(regs, .sbi_prohibited);
         regs.mepc += 4;
         return;
     }
 
     if (fid > sbi.fid_range_host and fid <= sbi.fid_range_enclave and !cpu.isEnclaveContext()) {
-        regs.a0 = @intFromEnum(sbi.Error.sbi_prohibited);
+        setRegError(regs, .sbi_prohibited);
         regs.mepc += 4;
         return;
     }
@@ -127,15 +127,17 @@ fn handleSbiEcall(regs: *trap_regs.TrapRegs) void {
 fn setRegError(regs: *trap_regs.TrapRegs, err: sbi.Error) void {
     regs.a0 = @as(usize, @bitCast(@as(i64, @intFromEnum(err))));
 }
+
+fn handleCreate(regs: *trap_regs.TrapRegs) sbi.Error {
     var args: sbi.CreateArgs = undefined;
     const ce = enclave_ops.copyCreateArgs(regs.a0, &args);
     if (ce != .success) {
-        regs.a0 = @intFromEnum(ce);
+        setRegError(regs, ce);
         return ce;
     }
     var eid: u32 = undefined;
     const err = enclave_ops.createEnclave(&eid, args);
-    regs.a0 = @intFromEnum(err);
+    setRegError(regs, err);
     regs.a1 = if (err == .success) eid else 0;
     if (err == .success) uart.print("keystone-zig SM: enclave {d}\r\n", .{eid});
     return err;
@@ -144,32 +146,28 @@ fn setRegError(regs: *trap_regs.TrapRegs, err: sbi.Error) void {
 fn handleDestroy(regs: *trap_regs.TrapRegs) sbi.Error {
     const eid: u32 = @truncate(regs.a0);
     const err = enclave_ops.destroyEnclave(eid);
-    regs.a0 = @intFromEnum(err);
+    setRegError(regs, err);
     return err;
 }
 
 fn handleRun(regs: *trap_regs.TrapRegs) sbi.Error {
     const eid: u32 = @truncate(regs.a0);
     const err = enclave_ops.runEnclave(regs, eid);
-    if (err != .success) {
-        regs.a0 = @intFromEnum(err);
-        return err;
-    }
-    // context switch in place — mret runs enclave
-    return .success;
+    if (err != .success) setRegError(regs, err);
+    return err;
 }
 
 fn handleResume(regs: *trap_regs.TrapRegs) sbi.Error {
     const eid: u32 = @truncate(regs.a0);
     const err = enclave_ops.resumeEnclave(regs, eid);
-    if (err != .success) regs.a0 = @intFromEnum(err);
+    if (err != .success) setRegError(regs, err);
     return err;
 }
 
 fn handleExit(regs: *trap_regs.TrapRegs) sbi.Error {
     const retval = regs.a0;
     const err = enclave_ops.exitEnclave(regs, cpu.getEnclaveId());
-    regs.a0 = @intFromEnum(err);
+    setRegError(regs, err);
     regs.a1 = retval;
     return err;
 }
@@ -177,19 +175,19 @@ fn handleExit(regs: *trap_regs.TrapRegs) sbi.Error {
 fn handleStop(regs: *trap_regs.TrapRegs) sbi.Error {
     const request = regs.a0;
     const err = enclave_ops.stopEnclave(regs, request, cpu.getEnclaveId());
-    regs.a0 = @intFromEnum(err);
+    setRegError(regs, err);
     return err;
 }
 
 fn handleAttest(regs: *trap_regs.TrapRegs) sbi.Error {
     const err = enclave_ops.attestEnclave(regs.a0, regs.a1, regs.a2, cpu.getEnclaveId());
-    regs.a0 = @intFromEnum(err);
+    setRegError(regs, err);
     return err;
 }
 
 fn handleSealingKey(regs: *trap_regs.TrapRegs) sbi.Error {
     const err = enclave_ops.getSealingKey(regs.a0, regs.a1, regs.a2, cpu.getEnclaveId());
-    regs.a0 = @intFromEnum(err);
+    setRegError(regs, err);
     return err;
 }
 
