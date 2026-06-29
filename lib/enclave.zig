@@ -1,9 +1,12 @@
-//! Enclave metadata managed by the Security Monitor in M-mode.
+//! Enclave metadata — parity with `enclave.h`.
 
 const sbi = @import("sbi.zig");
-const pmp = @import("pmp.zig");
+const pmp_runtime = @import("pmp_runtime.zig");
+const thread = @import("thread.zig");
 
 pub const max_enclaves = @import("config").max_enclaves;
+pub const max_encl_threads = 1;
+pub const enclave_regions_max = 2;
 pub const invalid_id: u32 = 0xFFFF_FFFF;
 
 pub const State = enum(i8) {
@@ -17,22 +20,23 @@ pub const State = enum(i8) {
 
 pub const RegionType = enum(u8) {
     invalid,
-    epm, // enclave private memory
-    utm, // untrusted shared memory
+    epm,
+    utm,
     other,
 };
 
 pub const Region = struct {
-    pmp_entry: u8 = 0xFF,
+    pmp_rid: pmp_runtime.RegionId = pmp_runtime.invalid_region,
     region_type: RegionType = .invalid,
-    base: usize = 0,
-    size: usize = 0,
 };
 
 pub const Enclave = struct {
-    id: u32 = invalid_id,
+    eid: u32 = invalid_id,
+    encl_satp: usize = 0,
     state: State = .invalid,
-    regions: [2]Region = .{.{}, .{}},
+    regions: [enclave_regions_max]Region = .{.{}} ** enclave_regions_max,
+    hash: [sbi.MDSIZE]u8 = .{0} ** sbi.MDSIZE,
+    sign: [sbi.SIGNATURE_SIZE]u8 = .{0} ** sbi.SIGNATURE_SIZE,
     params: sbi.RuntimeParams = .{
         .dram_base = 0,
         .dram_size = 0,
@@ -41,58 +45,89 @@ pub const Enclave = struct {
         .free_base = 0,
         .untrusted_base = 0,
         .untrusted_size = 0,
+        .free_requested = 0,
     },
-    // Measurement hash placeholder — attestation wired in phase 2
-    measurement: [64]u8 = .{0} ** 64,
+    n_thread: u32 = 0,
+    threads: [max_encl_threads]thread.ThreadState = .{.{}} ** max_encl_threads,
 
-    pub fn isActive(self: *const Enclave) bool {
-        return self.state != .invalid and self.state != .destroying;
+    pub fn exists(self: *const Enclave) bool {
+        return self.state != .invalid;
     }
 };
 
-pub const Table = struct {
-    slots: [max_enclaves]Enclave,
+var enclaves: [max_enclaves]Enclave = .{.{}} ** max_enclaves;
+var encl_lock: bool = false; // spinlock stub — single hart
 
-    pub fn init() Table {
-        var table: Table = undefined;
-        for (&table.slots) |*slot| slot.* = .{};
-        return table;
+fn lock() void {
+    encl_lock = true;
+}
+fn unlock() void {
+    encl_lock = false;
+}
+
+pub fn initMetadata() void {
+    for (&enclaves) |*e| {
+        e.* = .{};
+        e.state = .invalid;
+        for (&e.regions) |*r| r.* = .{};
     }
+}
 
-    pub fn allocate(self: *Table) ?u32 {
-        for (&self.slots, 0..) |*slot, i| {
-            if (slot.state == .invalid) {
-                slot.* = .{};
-                slot.id = @intCast(i);
-                slot.state = .allocated;
-                return slot.id;
-            }
+pub fn get(eid: u32) ?*Enclave {
+    if (eid >= max_enclaves) return null;
+    if (enclaves[eid].state == .invalid) return null;
+    return &enclaves[eid];
+}
+
+pub fn getMut(eid: u32) ?*Enclave {
+    return get(eid);
+}
+
+pub fn allocEid(out: *u32) sbi.Error {
+    lock();
+    defer unlock();
+    for (&enclaves, 0..) |*e, i| {
+        if (e.state == .invalid) {
+            e.* = .{};
+            e.state = .allocated;
+            e.eid = @intCast(i);
+            out.* = @intCast(i);
+            return .success;
         }
-        return null;
     }
+    return .no_free_resource;
+}
 
-    pub fn get(self: *Table, eid: u32) ?*Enclave {
-        if (eid >= max_enclaves) return null;
-        const slot = &self.slots[eid];
-        if (!slot.isActive()) return null;
-        return slot;
-    }
+pub fn freeEid(eid: u32) void {
+    lock();
+    enclaves[eid].state = .invalid;
+    unlock();
+}
 
-    pub fn destroy(self: *Table, eid: u32) sbi.Error {
-        const slot = self.get(eid) orelse return .invalid_id;
-        slot.state = .destroying;
-        slot.* = .{};
-        return .success;
-    }
-};
+pub fn table() *[max_enclaves]Enclave {
+    return &enclaves;
+}
 
-/// Validate create args against PMP constraints.
-pub fn validateCreateArgs(args: sbi.CreateArgs) sbi.Error {
-    if (args.epm_size == 0 or args.epm_size % pmp.page_size != 0) return .illegal_argument;
-    if (args.epm_paddr % pmp.granule != 0) return .illegal_argument;
-    if (args.utm_size > 0) {
-        if (args.utm_size % pmp.page_size != 0) return .illegal_argument;
-        if (args.utm_paddr % pmp.granule != 0) return .illegal_argument;
+pub fn isCreateArgsValid(args: sbi.CreateArgs) bool {
+    if (args.epm_region.size == 0) return false;
+    const epm_start = args.epm_region.paddr;
+    const epm_end = epm_start + args.epm_region.size;
+    if (epm_start >= epm_end) return false;
+    const utm_start = args.utm_region.paddr;
+    const utm_end = utm_start + args.utm_region.size;
+    if (utm_start >= utm_end and args.utm_region.size > 0) return false;
+    if (args.runtime_paddr < epm_start or args.runtime_paddr >= epm_end) return false;
+    if (args.user_paddr < epm_start or args.user_paddr >= epm_end) return false;
+    if (args.free_paddr < epm_start or args.free_paddr > epm_end) return false;
+    if (args.runtime_paddr > args.user_paddr) return false;
+    if (args.user_paddr > args.free_paddr) return false;
+    return true;
+}
+
+pub fn getRegionIndex(eid: u32, rtype: RegionType) i32 {
+    const e = get(eid) orelse return -1;
+    for (e.regions, 0..) |r, i| {
+        if (r.region_type == rtype) return @intCast(i);
     }
-    return .success;
+    return -1;
 }
