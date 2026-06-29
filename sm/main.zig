@@ -28,9 +28,8 @@ export fn smEntry() noreturn {
     delegateToSupervisor();
     threadHostVector();
 
-    const kernel_entry: *const fn () noreturn = @ptrFromInt(layout.qemu_virt.kernel_entry);
     uart.write("keystone-zig SM: entering S-mode kernel\r\n");
-    enterSupervisor(kernel_entry);
+    enterSupervisor(layout.qemu_virt.kernel_entry);
 }
 
 fn threadHostVector() void {
@@ -39,16 +38,18 @@ fn threadHostVector() void {
 
 fn delegateToSupervisor() void {
     csr.write("mideleg", trap_regs.MIP_SSIP | trap_regs.MIP_STIP | trap_regs.MIP_SEIP);
-    csr.write("medeleg", 0xB1FF);
+    // Do not delegate instruction/load faults — M-mode handles them during bring-up.
+    csr.write("medeleg", 0xB100);
 }
 
-fn enterSupervisor(entry: *const fn () noreturn) noreturn {
+fn enterSupervisor(entry: usize) noreturn {
     const kernel_sp: usize = layout.qemu_virt.kernel_base + layout.qemu_virt.kernel_size - 16;
-    var mstatus: csr.Mstatus = @bitCast(csr.read("mstatus"));
-    mstatus.mpp = csr.Mstatus.mpp_s;
-    mstatus.mpie = 1;
-    csr.write("mstatus", @bitCast(mstatus));
-    csr.write("mepc", @intFromPtr(entry));
+    var mstatus = csr.read("mstatus");
+    mstatus &= ~(@as(usize, 3) << trap_regs.MSTATUS_MPP_SHIFT);
+    mstatus |= @as(usize, 1) << trap_regs.MSTATUS_MPP_SHIFT;
+    mstatus |= 1 << 7; // MPIE
+    csr.write("mstatus", mstatus);
+    csr.write("mepc", entry);
     csr.write("satp", 0);
     asm volatile (
         \\ mv sp, %[sp]
@@ -69,7 +70,7 @@ export fn handleMachineTrap(regs_ptr: *trap_regs.TrapRegs) void {
         return;
     }
 
-    uart.print("keystone-zig SM: trap mcause=0x{x}\r\n", .{mcause});
+    uart.print("keystone-zig SM: trap mcause=0x{x} mtval=0x{x} mepc=0x{x}\r\n", .{ mcause, csr.read("mtval"), csr.read("mepc") });
     while (true) csr.wfi();
 }
 

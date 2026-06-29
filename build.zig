@@ -54,6 +54,7 @@ pub fn build(b: *std.Build) void {
         }),
     });
     kernel_exe.root_module.addImport("keystone", keystone_module);
+    kernel_exe.root_module.addAssemblyFile(b.path("kernel/boot.S"));
     kernel_exe.setLinkerScript(b.path("kernel/linker.ld"));
     kernel_exe.root_module.code_model = .medany;
     kernel_exe.entry = .{ .symbol_name = "_start" };

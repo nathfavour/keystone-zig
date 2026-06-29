@@ -9,8 +9,7 @@ SECTIONS {
     . = ORIGIN(KERNEL);
 
     .text : ALIGN(4) {
-        KEEP(*(.text._start))
-        KEEP(*(.text.start))
+        KEEP(*(.text.boot))
         *(.text*)
     } > KERNEL
 

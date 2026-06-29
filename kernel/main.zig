@@ -13,7 +13,7 @@ const FREE: usize = EPM_BASE + 0x0020_0000;
 const UTM_BASE: usize = EPM_BASE + EPM_SIZE;
 const UTM_SIZE: usize = 0x0010_0000;
 
-export fn _start() noreturn {
+export fn kernelMain() noreturn {
     uart.write("keystone-zig kernel stub: alive\r\n");
     demoEnclaveLifecycle();
     uart.write("keystone-zig kernel stub: halt\r\n");
