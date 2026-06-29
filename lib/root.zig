@@ -22,6 +22,9 @@ pub const hmac_sha3 = @import("hmac_sha3.zig");
 pub const hkdf = @import("hkdf.zig");
 pub const crypto = @import("crypto.zig");
 pub const ed25519 = @import("ed25519.zig");
+pub const platform = @import("platform.zig");
+pub const test_dev_key = @import("test_dev_key.zig");
+pub const config = @import("config");
 
 test {
     _ = csr;

@@ -42,6 +42,19 @@ pub fn sign(
     sc.sc_muladd(sig[32..64], hram[0..32], private_key[0..32], r[0..32]);
 }
 
+/// Derive an Ed25519 keypair from a 32-byte seed (upstream `ed25519_create_keypair`).
+pub fn createKeypair(public_key: *[32]u8, private_key: *[64]u8, seed: *const [32]u8) void {
+    var A: ge.GeP3 = undefined;
+
+    sha3.hash(seed, private_key, 64);
+    private_key[0] &= 248;
+    private_key[31] &= 63;
+    private_key[31] |= 64;
+
+    ge.ge_scalarmult_base(&A, private_key[0..32]);
+    ge.ge_p3_tobytes(public_key, &A);
+}
+
 test "sign smoke" {
     var sig: [64]u8 = undefined;
     const msg = "keystone";

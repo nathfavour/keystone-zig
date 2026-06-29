@@ -21,6 +21,8 @@ pub fn build(b: *std.Build) void {
     options.addOption([]const u8, "hardware", hw);
     options.addOption(usize, "max_enclaves", 8);
     options.addOption(bool, "standalone_sm", true);
+    options.addOption(bool, "bootloader_provided_keys", false);
+    options.addOption(bool, "verify_sm_hash", false);
 
     const keystone_module = b.addModule("keystone", .{
         .root_source_file = b.path("lib/root.zig"),
@@ -49,6 +51,31 @@ pub fn build(b: *std.Build) void {
 
     const install_sm = b.addInstallArtifact(sm_exe, .{});
     b.getInstallStep().dependOn(&install_sm.step);
+
+    const sm_bin = b.addObjCopy(sm_exe.getEmittedBin(), .{ .format = .bin });
+    const install_sm_bin = b.addInstallBinFile(sm_bin.getOutput(), "keystone-sm.bin");
+    b.getInstallStep().dependOn(&install_sm_bin.step);
+
+    const sha3_host = b.addModule("sha3_host", .{
+        .root_source_file = b.path("lib/sha3_host.zig"),
+        .target = b.graph.host,
+        .optimize = optimize,
+    });
+
+    const hash_sm_exe = b.addExecutable(.{
+        .name = "hash-sm",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/hash_sm.zig"),
+            .target = b.graph.host,
+            .optimize = optimize,
+        }),
+    });
+    hash_sm_exe.root_module.addImport("sha3_host", sha3_host);
+    const run_hash_sm = b.addRunArtifact(hash_sm_exe);
+    run_hash_sm.addFileArg(sm_bin.getOutput());
+    run_hash_sm.addArg("100000");
+    const hash_sm_step = b.step("hash-sm", "Generate lib/sm_firmware_hash.zig from keystone-sm.bin");
+    hash_sm_step.dependOn(&run_hash_sm.step);
 
     // --- S-mode kernel stub (clarigggz integration point) ---
     const kernel_exe = b.addExecutable(.{

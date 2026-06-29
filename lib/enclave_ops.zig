@@ -286,7 +286,7 @@ pub fn getSealingKey(sealing_key: usize, key_ident: usize, key_ident_size: usize
     var key_struct: sbi.SealingKey = undefined;
     if (crypto.deriveSealingKey(&key_struct.key, key_ident, key_ident_size, &enc.hash) != 0)
         return .unknown;
-    crypto.sign(&key_struct.signature, &key_struct.key, sbi.SEALING_KEY_SIZE);
+    crypto.smSign(&key_struct.signature, &key_struct.key);
     if (mprv.copyFromSm(sealing_key, std.mem.asBytes(&key_struct))) return .illegal_argument;
     return .success;
 }

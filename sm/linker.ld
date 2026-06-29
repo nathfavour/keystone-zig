@@ -28,7 +28,9 @@ SECTIONS {
     } > SM
 
     .bss : {
+        __bss_start = .;
         *(.bss*)
         *(COMMON)
+        __bss_end = .;
     } > SM
 }

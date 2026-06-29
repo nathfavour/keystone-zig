@@ -15,12 +15,28 @@ const uart = keystone.uart;
 const pmp_runtime = keystone.pmp_runtime;
 const cpu = keystone.cpu;
 const crypto = keystone.crypto;
+const platform = keystone.platform;
 const trap_regs = keystone.trap_regs;
+
+const cfg = keystone.config;
 
 export fn smEntry() noreturn {
     uart.write("keystone-zig SM: boot\r\n");
 
-    crypto.smInitKeys();
+    if (platform.initGlobalOnce() != .success) {
+        uart.write("keystone-zig SM: platform init failed\r\n");
+        while (true) csr.wfi();
+    }
+
+    crypto.initKeys(layout.qemu_virt.sm_base, layout.qemu_virt.sm_size);
+
+    if (comptime cfg.verify_sm_hash) {
+        if (!crypto.verifyExpectedHash()) {
+            uart.write("keystone-zig SM: firmware hash mismatch\r\n");
+            while (true) csr.wfi();
+        }
+    }
+
     enclave.initMetadata();
 
     const ierr = pmp_runtime.smInitRegions(layout.qemu_virt.sm_base, layout.qemu_virt.sm_size);
