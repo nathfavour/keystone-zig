@@ -253,8 +253,6 @@ pub fn osmPmpSet(perm: u8) sbi.Error {
 }
 
 pub fn smInitRegions(sm_base: usize, sm_size: usize) sbi.Error {
-    _ = sm_base;
-    _ = sm_size;
     pmpInit();
 
     // Standalone SM: all code lives inside the would-be SMM PMP window. A TOP
