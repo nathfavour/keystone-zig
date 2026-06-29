@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+// SPDX-FileCopyrightText: 2026 Nath Favour
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -10,7 +10,7 @@ pub fn build(b: *std.Build) void {
             .cpu_arch = .riscv64,
             .os_tag = .freestanding,
             .cpu_model = .{ .explicit = &std.Target.riscv.cpu.generic_rv64 },
-            .cpu_features_add = std.Target.riscv.featureSet(&.{.m, .a, .c, .f, .d}),
+            .cpu_features_add = std.Target.riscv.featureSet(&.{ .m, .a, .c, .f, .d }),
         },
     });
     const optimize = b.standardOptimizeOption(.{});
@@ -42,6 +42,7 @@ pub fn build(b: *std.Build) void {
     sm_exe.root_module.addAssemblyFile(b.path("sm/boot.S"));
     sm_exe.root_module.addAssemblyFile(b.path("sm/trap.S"));
     sm_exe.root_module.addAssemblyFile(b.path("sm/drop.S"));
+    sm_exe.root_module.addAssemblyFile(b.path("lib/mprv.S"));
     sm_exe.setLinkerScript(b.path("sm/linker.ld"));
     sm_exe.root_module.code_model = .medany;
     sm_exe.entry = .disabled;
@@ -60,6 +61,7 @@ pub fn build(b: *std.Build) void {
     });
     kernel_exe.root_module.addImport("keystone", keystone_module);
     kernel_exe.root_module.addAssemblyFile(b.path("kernel/boot.S"));
+    kernel_exe.root_module.addAssemblyFile(b.path("lib/mprv.S"));
     kernel_exe.setLinkerScript(b.path("kernel/linker.ld"));
     kernel_exe.root_module.code_model = .medany;
     kernel_exe.entry = .{ .symbol_name = "_start" };
@@ -82,6 +84,7 @@ pub fn build(b: *std.Build) void {
     });
     enclave_exe.root_module.addImport("keystone", keystone_module);
     enclave_exe.root_module.addAssemblyFile(b.path("enclave/boot.S"));
+    enclave_exe.root_module.addAssemblyFile(b.path("lib/mprv.S"));
     enclave_exe.setLinkerScript(b.path("enclave/linker.ld"));
     enclave_exe.root_module.code_model = .medany;
     enclave_exe.entry = .{ .symbol_name = "_start" };
@@ -108,7 +111,7 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&run_lib_tests.step);
 
     // --- QEMU smoke target ---
-    const qemu_script = b.addSystemCommand(&.{ b.pathFromRoot("scripts/qemu.sh") });
+    const qemu_script = b.addSystemCommand(&.{b.pathFromRoot("scripts/qemu.sh")});
     qemu_script.step.dependOn(&install_sm.step);
     qemu_script.step.dependOn(&install_kernel.step);
     qemu_script.step.dependOn(&install_enclave.step);

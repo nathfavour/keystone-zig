@@ -129,10 +129,10 @@ Legend: `[x]` done · `[~]` partial/stub · `[ ]` not started
 
 | Item | Status |
 |------|--------|
-| `copy_to_sm` | `[~]` | MPRV load loop, no fault detect |
-| `copy_from_sm` | `[~]` |
-| `copy_block_*` asm paths | `[ ]` |
-| PMP fault → `REGION_OVERLAPS` | `[ ]` |
+| `copy_to_sm` | `[x]` | `mprv.S` fault-safe copy path |
+| `copy_from_sm` | `[x]` | `mprv.S` fault-safe copy path |
+| `copy_block_*` asm paths | `[x]` |
+| PMP fault → `REGION_OVERLAPS` | `[x]` |
 
 ---
 
@@ -264,8 +264,8 @@ Legend: `[x]` done · `[~]` partial/stub · `[ ]` not started
 2. **[P0]** Enclave run/exit return to kernel (context switch / trap stack).
 3. **[P1]** Platform RoT keys (`sm_copy_key` / sanctum keys).
 2. **[P0]** End-to-end test: kernel `create` → `run` → enclave UART → `exit` → `destroy`.
-3. **[P1]** Port `mprv.S` block copies with PMP fault detection.
-4. **[P1]** Real SHA3-512 + Ed25519 (`crypto.zig` ← `sha3/`, `ed25519/`).
+3. **[P1]** ~~Port `mprv.S` block copies with PMP fault detection~~.
+4. **[P1]** Platform key provisioning and measured boot (`sm_copy_key` parity).
 5. **[P1]** TOR PMP regions + locked bit parity.
 6. **[P2]** `trap_vector_enclave` separate path + enclave interrupt delegation.
 7. **[P2]** IPI / multi-hart PMP sync.

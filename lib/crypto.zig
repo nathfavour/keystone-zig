@@ -82,5 +82,18 @@ pub fn deriveSealingKey(key: *[sbi.SEALING_KEY_SIZE]u8, key_ident: usize, key_id
 }
 
 pub fn platformRandom() usize {
-    return 0xDEADBEEF;
+    // Test-only fallback entropy path (matches Keystone generic platform hook).
+    var cycles: usize = undefined;
+    asm volatile ("rdcycle %[c]"
+        : [c] "=r" (cycles),
+    );
+    var x: u64 = @truncate(cycles);
+    w +%= s;
+    x *%= x;
+    x +%= w;
+    x = (x >> 32) | (x << 32);
+    return @as(usize, @intCast(x));
 }
+
+var w: u64 = 0;
+const s: u64 = 0xb5ad4eceda1ce2a9;
