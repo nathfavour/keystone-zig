@@ -4,14 +4,6 @@ const keystone = @import("keystone");
 const sbi = keystone.sbi;
 const uart = keystone.uart;
 
-export fn _start() callconv(.naked) noreturn {
-    asm volatile (
-        \\ call enclaveMain
-        \\ 1: wfi
-        \\ j 1b
-    );
-}
-
 export fn enclaveMain() void {
     uart.write("enclave-hello: secure bubble\r\n");
 

@@ -253,14 +253,25 @@ pub fn osmPmpSet(perm: u8) sbi.Error {
 }
 
 pub fn smInitRegions(sm_base: usize, sm_size: usize) sbi.Error {
+    _ = sm_base;
+    _ = sm_size;
     pmpInit();
-    var rid: RegionId = undefined;
-    const e1 = pmpRegionInit(sm_base, sm_size, .top, &rid, false);
-    if (e1 != .success) return e1;
-    sm_region_id = rid;
-    const e2 = pmpSetKeystone(sm_region_id, PMP_NO_PERM);
-    if (e2 != .success) return e2;
 
+    // Standalone SM: all code lives inside the would-be SMM PMP window. A TOP
+    // region with PMP_NO_PERM would deny M-mode fetches (entry 0 wins over OSM).
+    // OpenSBI builds avoid this because SM text is outside SMM_BASE. Skip TOP
+    // region until we split code/data like upstream.
+    const standalone = @import("config").standalone_sm;
+    if (!standalone) {
+        var rid: RegionId = undefined;
+        const e1 = pmpRegionInit(sm_base, sm_size, .top, &rid, false);
+        if (e1 != .success) return e1;
+        sm_region_id = rid;
+        const e2 = pmpSetKeystone(sm_region_id, PMP_NO_PERM);
+        if (e2 != .success) return e2;
+    }
+
+    var rid: RegionId = undefined;
     const e3 = pmpRegionInit(0, std.math.maxInt(usize), .bottom, &rid, true);
     if (e3 != .success) return e3;
     os_region_id = rid;

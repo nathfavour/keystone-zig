@@ -37,27 +37,16 @@ fn threadHostVector() void {
 }
 
 fn delegateToSupervisor() void {
-    csr.write("mideleg", trap_regs.MIP_SSIP | trap_regs.MIP_STIP | trap_regs.MIP_SEIP);
-    // Do not delegate instruction/load faults — M-mode handles them during bring-up.
-    csr.write("medeleg", 0xB100);
+    // Kernel sets these once its trap vector is live.
+    csr.write("mideleg", 0);
+    csr.write("medeleg", 0);
 }
+
+extern fn drop_to_supervisor(entry: usize, sp: usize) noreturn;
 
 fn enterSupervisor(entry: usize) noreturn {
     const kernel_sp: usize = layout.qemu_virt.kernel_base + layout.qemu_virt.kernel_size - 16;
-    var mstatus = csr.read("mstatus");
-    mstatus &= ~(@as(usize, 3) << trap_regs.MSTATUS_MPP_SHIFT);
-    mstatus |= @as(usize, 1) << trap_regs.MSTATUS_MPP_SHIFT;
-    mstatus |= 1 << 7; // MPIE
-    csr.write("mstatus", mstatus);
-    csr.write("mepc", entry);
-    csr.write("satp", 0);
-    asm volatile (
-        \\ mv sp, %[sp]
-        \\ mret
-        :
-        : [sp] "r" (kernel_sp),
-    );
-    unreachable;
+    drop_to_supervisor(entry, kernel_sp);
 }
 
 export fn handleMachineTrap(regs_ptr: *trap_regs.TrapRegs) void {

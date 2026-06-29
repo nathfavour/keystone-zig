@@ -16,7 +16,7 @@ pub fn build(b: *std.Build) void {
     const options = b.addOptions();
     options.addOption([]const u8, "hardware", hw);
     options.addOption(usize, "max_enclaves", 8);
-    options.addOption(usize, "pmp_entries", 16);
+    options.addOption(bool, "standalone_sm", true);
 
     const keystone_module = b.addModule("keystone", .{
         .root_source_file = b.path("lib/root.zig"),
@@ -37,6 +37,7 @@ pub fn build(b: *std.Build) void {
     sm_exe.root_module.addImport("keystone", keystone_module);
     sm_exe.root_module.addAssemblyFile(b.path("sm/boot.S"));
     sm_exe.root_module.addAssemblyFile(b.path("sm/trap.S"));
+    sm_exe.root_module.addAssemblyFile(b.path("sm/drop.S"));
     sm_exe.setLinkerScript(b.path("sm/linker.ld"));
     sm_exe.root_module.code_model = .medany;
     sm_exe.entry = .disabled;
@@ -76,6 +77,7 @@ pub fn build(b: *std.Build) void {
         }),
     });
     enclave_exe.root_module.addImport("keystone", keystone_module);
+    enclave_exe.root_module.addAssemblyFile(b.path("enclave/boot.S"));
     enclave_exe.setLinkerScript(b.path("enclave/linker.ld"));
     enclave_exe.root_module.code_model = .medany;
     enclave_exe.entry = .{ .symbol_name = "_start" };
