@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Ed25519 signing (SHA3-512) — port of `keystone/sm/src/ed25519/sign.c`.
 
 const std = @import("std");

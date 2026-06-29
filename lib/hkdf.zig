@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! HKDF-SHA3-512 — port of `keystone/sm/src/hkdf_sha3_512/hkdf_sha3_512.c`.
 
 const hmac_sha3 = @import("hmac_sha3.zig");

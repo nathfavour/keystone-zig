@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Keystone Security Monitor — M-mode root of trust.
 //! Parity target: `sm.c`, `sm-sbi.c`, `sm-sbi-opensbi.c`.
 
@@ -109,12 +113,7 @@ fn handleSbiEcall(regs: *trap_regs.TrapRegs) void {
     };
 
     if (err == .success or @intFromEnum(err) >= 100_000) {
-        // Non-context-switch returns advance mepc here.
-        // run/resume/exit/stop modify frame and return via mret without +4.
-        switch (@as(sbi.Fid, @enumFromInt(fid))) {
-            .run_enclave, .resume_enclave, .exit_enclave, .stop_enclave => {},
-            else => regs.mepc += 4,
-        }
+        regs.mepc += 4;
     }
 }
 
@@ -147,6 +146,7 @@ fn handleDestroy(regs: *trap_regs.TrapRegs) sbi.Error {
 fn handleRun(regs: *trap_regs.TrapRegs) sbi.Error {
     const eid: u32 = @truncate(regs.a0);
     const err = enclave_ops.runEnclave(regs, eid);
+    if (err == .success) regs.mepc -%= 4;
     if (err != .success) setRegError(regs, err);
     return err;
 }
@@ -154,6 +154,7 @@ fn handleRun(regs: *trap_regs.TrapRegs) sbi.Error {
 fn handleResume(regs: *trap_regs.TrapRegs) sbi.Error {
     const eid: u32 = @truncate(regs.a0);
     const err = enclave_ops.resumeEnclave(regs, eid);
+    if (err == .success) regs.mepc -%= 4;
     if (err != .success) setRegError(regs, err);
     return err;
 }

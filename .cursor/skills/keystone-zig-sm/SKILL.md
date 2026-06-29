@@ -1,4 +1,8 @@
 ---
+# SPDX-FileCopyrightText: 2026 2026 Nath Favour
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 name: keystone-zig-sm
 description: >-
   Develops the M-mode Security Monitor in keystone-zig. Use when editing sm/,

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! SHA-3 (Keccak) — clean-room port of `keystone/sm/src/sha3/sha3.c`.
 
 const std = @import("std");

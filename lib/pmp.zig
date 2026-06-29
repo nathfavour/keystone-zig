@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Comptime Physical Memory Protection (PMP) map generation and validation.
 //!
 //! Rationale: PMP bitmasks are error-prone in C macros. Zig `comptime` validates

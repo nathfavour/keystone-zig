@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Dynamic PMP region allocator — parity with `pmp.c`.
 
 const std = @import("std");

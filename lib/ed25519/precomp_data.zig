@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Precomputed base points — port of `precomp_data.h`.
 
 const Fe = @import("fe.zig").Fe;

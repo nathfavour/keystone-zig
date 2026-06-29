@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! MPRV-assisted copies between security domains — parity with `mprv.h`.
 
 const csr = @import("csr.zig");

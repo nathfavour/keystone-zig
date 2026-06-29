@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Enclave metadata — parity with `enclave.h`.
 
 const sbi = @import("sbi.zig");

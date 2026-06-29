@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! RISC-V Control and Status Register helpers for M-mode.
 
 pub const Mstatus = packed struct(u64) {

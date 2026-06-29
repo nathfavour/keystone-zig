@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Machine trap register frame — layout matches Keystone `sbi_trap_regs` / `struct ctx`.
 //!
 //! Indexed 0..31 for `swap_prev_state` parity with `thread.c`.

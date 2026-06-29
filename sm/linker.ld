@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2026 2026 Nath Favour
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 OUTPUT_ARCH(riscv)
 ENTRY(_start)
 

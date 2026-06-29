@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! QEMU virt UART (16550) — minimal polled TX for early SM debug.
 
 const std = @import("std");

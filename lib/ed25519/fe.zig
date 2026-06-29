@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Field arithmetic over GF(2^255-19) — port of `fe.c`.
 
 pub const Fe = [10]i32;

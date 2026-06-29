@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Group arithmetic on Curve25519 — port of `ge.c` (sign path).
 
 const fe = @import("fe.zig");

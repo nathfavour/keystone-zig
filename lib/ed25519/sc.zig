@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Scalar arithmetic mod l — port of `sc.c`.
 
 fn load3(in: []const u8) u64 {

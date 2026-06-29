@@ -1,4 +1,8 @@
 ---
+# SPDX-FileCopyrightText: 2026 2026 Nath Favour
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 name: keystone-zig-clarigggz
 description: >-
   Integrates keystone-zig TEE with clarigggz OS smart-glasses microkernel.

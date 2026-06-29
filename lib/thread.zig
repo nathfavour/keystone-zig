@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Enclave thread state and host<->enclave context swap — parity with `thread.c`.
 
 const trap_regs = @import("trap_regs.zig");

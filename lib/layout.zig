@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Platform memory layout — comptime-validated PMP map for QEMU virt / clarigggz.
 
 const pmp = @import("pmp.zig");

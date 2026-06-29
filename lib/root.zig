@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Keystone-Zig shared library — clean-room RISC-V TEE primitives.
 
 pub const csr = @import("csr.zig");

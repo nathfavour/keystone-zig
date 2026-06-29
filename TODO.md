@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 2026 Nath Favour
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 # keystone-zig — Parity Tracker
 
 Clean-room Zig port of the [Keystone](https://keystone-enclave.org) Security Monitor (SM) design.  
@@ -15,7 +21,7 @@ Legend: `[x]` done · `[~]` partial/stub · `[ ]` not started
 |-------|--------|--------|
 | 1 | Repo, build, comptime PMP, agent skills | `[x]` |
 | 2 | Context switch, dynamic PMP, enclave lifecycle, trap frame | `[~]` |
-| 3 | Crypto, attestation, sealing, measured boot | `[ ]` |
+| 3 | Crypto, attestation, sealing, measured boot | `[~]` |
 | 4 | clarigggz integration, plugins, multi-hart | `[ ]` |
 
 ---
@@ -76,8 +82,8 @@ Legend: `[x]` done · `[~]` partial/stub · `[ ]` not started
 | `resume_enclave` | `[x]` | |
 | `exit_enclave` | `[x]` | |
 | `stop_enclave` | `[x]` | TIMER / EDGE_CALL_HOST |
-| `attest_enclave` | `[~]` | path wired, crypto stub |
-| `get_sealing_key` | `[~]` | path wired, crypto stub |
+| `attest_enclave` | `[~]` | report path wired; keys still dev/test |
+| `get_sealing_key` | `[~]` | HKDF wired; platform key policy pending |
 | `context_switch_to_enclave` | `[x]` | PMP swap, params, satp |
 | `context_switch_to_host` | `[x]` | PMP restore, mip forward |
 | `clean_enclave_memory` (UTM zero) | `[x]` | |
@@ -158,16 +164,16 @@ Legend: `[x]` done · `[~]` partial/stub · `[ ]` not started
 | HMAC-SHA3-512 (`lib/hmac_sha3.zig`) | `[x]` |
 | HKDF-SHA3-512 (`lib/hkdf.zig`) | `[x]` |
 | Ed25519 sign (`lib/ed25519.zig`) | `[x]` |
-| Enclave EPM hash (`validateAndHashEnclave`) | `[x]` M-mode page reads |
+| Enclave EPM hash (`validateAndHashEnclave`) | `[x]` |
 | Attestation report + sealing key | `[~]` wired, dev test keys |
 
 | Item | Status |
 |------|--------|
-| SHA3-512 measure enclave | `[ ]` |
-| `validate_and_hash_epm` page walk | `[~]` stub |
-| Ed25519 sign / verify | `[ ]` |
-| `sm_sign` | `[~]` stub |
-| `sm_derive_sealing_key` (HKDF) | `[~]` stub |
+| SHA3-512 measure enclave | `[x]` |
+| `validate_and_hash_epm` page walk | `[x]` |
+| Ed25519 sign / verify | `[~]` sign only |
+| `sm_sign` | `[x]` |
+| `sm_derive_sealing_key` (HKDF) | `[x]` |
 | `dev_public_key` / secure boot | `[ ]` |
 | `sm_expected_hash.h` tooling | `[ ]` |
 | Report struct layout | `[x]` |
@@ -233,7 +239,7 @@ Legend: `[x]` done · `[~]` partial/stub · `[ ]` not started
 |------|--------|
 | `zig build` SM + kernel + enclave | `[x]` |
 | `zig build test` host PMP tests | `[x]` |
-| `zig build qemu` smoke | `[~]` SM→kernel→create OK; run/exit in progress |
+| `zig build qemu` smoke | `[x]` SM→kernel→create→run→exit→destroy OK |
 | `objcopy` flat binaries | `[x]` |
 | CMocka SM unit tests port | `[ ]` |
 | RV32 support | `[ ]` |

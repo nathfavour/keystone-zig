@@ -1,4 +1,8 @@
 ---
+# SPDX-FileCopyrightText: 2026 2026 Nath Favour
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 name: keystone-zig-architecture
 description: >-
   Guides clean-room Keystone TEE implementation in native Zig for clarigggz.

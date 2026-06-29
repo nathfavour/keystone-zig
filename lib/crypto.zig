@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 2026 Nath Favour
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Cryptography — SHA3-512, HMAC, HKDF, Ed25519 (parity with `crypto.c` / `attest.c`).
 
 const std = @import("std");
