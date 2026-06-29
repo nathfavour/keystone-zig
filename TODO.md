@@ -40,9 +40,9 @@ Legend: `[x]` done · `[~]` partial/stub · `[ ]` not started
 | `osm_pmp_set` | `sm.c` | `pmp_runtime.osmPmpSet` | `[x]` |
 | OpenSBI ecall registration | `sbi_ecall_register_extension` | direct `mtvec` handler | `[x]` (different integration) |
 | Multi-hart `sm_init_done` barrier | `sm.c` | single-hart only | `[ ]` |
-| `sm_copy_key` / RoT keys | platform | `crypto.smInitKeys` stub | `[~]` |
-| `platform_init_global_once` | `platform-hook.h` | stub | `[ ]` |
-| `platform_init_global` | per-platform | stub | `[ ]` |
+| `sm_copy_key` / RoT keys | platform | `crypto.initKeys` / `provisionKeysColdBoot` + `crypto_sanctum` | `[x]` |
+| `platform_init_global_once` | `platform-hook.h` | `platform.initGlobalOnce` | `[x]` |
+| `platform_init_global` | per-platform | `platform.initGlobal` stub | `[~]` |
 | S-mode kernel handoff (`mret`) | OpenSBI | `drop_to_supervisor` + PMP fix | `[x]` |
 | Enclave trap handler | `sbi_trap_handler_keystone_enclave` | via unified handler | `[~]` |
 
@@ -82,8 +82,8 @@ Legend: `[x]` done · `[~]` partial/stub · `[ ]` not started
 | `resume_enclave` | `[x]` | |
 | `exit_enclave` | `[x]` | |
 | `stop_enclave` | `[x]` | TIMER / EDGE_CALL_HOST |
-| `attest_enclave` | `[~]` | report path wired; keys still dev/test |
-| `get_sealing_key` | `[~]` | HKDF wired; platform key policy pending |
+| `attest_enclave` | `[~]` | report path wired; test dev RoT keys |
+| `get_sealing_key` | `[x]` | HKDF from `sm_private_key` + Ed25519 sign |
 | `context_switch_to_enclave` | `[x]` | PMP swap, params, satp |
 | `context_switch_to_host` | `[x]` | PMP restore, mip forward |
 | `clean_enclave_memory` (UTM zero) | `[x]` | |
@@ -165,7 +165,7 @@ Legend: `[x]` done · `[~]` partial/stub · `[ ]` not started
 | HKDF-SHA3-512 (`lib/hkdf.zig`) | `[x]` |
 | Ed25519 sign (`lib/ed25519.zig`) | `[x]` |
 | Enclave EPM hash (`validateAndHashEnclave`) | `[x]` |
-| Attestation report + sealing key | `[~]` wired, dev test keys |
+| Attestation report + sealing key | `[x]` test dev RoT keys |
 
 | Item | Status |
 |------|--------|
@@ -174,8 +174,8 @@ Legend: `[x]` done · `[~]` partial/stub · `[ ]` not started
 | Ed25519 sign / verify | `[~]` sign only |
 | `sm_sign` | `[x]` |
 | `sm_derive_sealing_key` (HKDF) | `[x]` |
-| `dev_public_key` / secure boot | `[ ]` |
-| `sm_expected_hash.h` tooling | `[ ]` |
+| `dev_public_key` / secure boot | `[x]` `provisionKeysColdBoot` + upstream test dev keys |
+| `sm_firmware_hash` tooling (`zig build hash-sm`) | `[x]` |
 | Report struct layout | `[x]` |
 
 ---
@@ -184,12 +184,12 @@ Legend: `[x]` done · `[~]` partial/stub · `[ ]` not started
 
 | Platform | Status |
 |----------|--------|
-| generic / QEMU virt | `[~]` `layout.qemu_virt` |
+| generic / QEMU virt | `[~]` `layout.qemu_virt` + `platform.zig` |
 | SiFive FU540 / waymasks | `[ ]` |
 | HiFive unmatched | `[ ]` |
 | Microchip MPFS | `[ ]` |
 | FPGA Ariane | `[ ]` |
-| `platform_random` | `[~]` stub |
+| `platform_random` | `[x]` MSWS PRNG (generic parity) |
 
 ---
 
@@ -262,10 +262,8 @@ Legend: `[x]` done · `[~]` partial/stub · `[ ]` not started
 
 1. **[P0]** ~~Fix QEMU S-mode entry~~ — fixed: `PMP_A_NAPOT` encoding, explicit OSM in `drop.S`, `-m 512M`, `.bin` loaders.
 2. **[P0]** Enclave run/exit return to kernel (context switch / trap stack).
-3. **[P1]** Platform RoT keys (`sm_copy_key` / sanctum keys).
-2. **[P0]** End-to-end test: kernel `create` → `run` → enclave UART → `exit` → `destroy`.
-3. **[P1]** ~~Port `mprv.S` block copies with PMP fault detection~~.
-4. **[P1]** Platform key provisioning and measured boot (`sm_copy_key` parity).
+3. **[P1]** ~~Platform RoT keys (`sm_copy_key` / sanctum keys)~~ — `provisionKeysColdBoot`, `crypto_sanctum`, test dev keys.
+4. **[P1]** ~~Platform key provisioning and measured boot~~ — `zig build hash-sm`, optional `-Dverify_sm_hash=true`.
 5. **[P1]** TOR PMP regions + locked bit parity.
 6. **[P2]** `trap_vector_enclave` separate path + enclave interrupt delegation.
 7. **[P2]** IPI / multi-hart PMP sync.
