@@ -27,7 +27,11 @@ const PmpRegion = struct {
     reg_idx: i32 = 0,
 };
 
-var regions: [max_regions]PmpRegion = .{.{}} ** max_regions;
+var regions: [max_regions]PmpRegion = blk: {
+    var arr: [max_regions]PmpRegion = undefined;
+    for (&arr) |*r| r.* = .{};
+    break :blk arr;
+};
 var region_def_bitmap: u32 = 0;
 var reg_bitmap: u32 = 0;
 var sm_region_id: RegionId = invalid_region;
@@ -40,7 +44,8 @@ fn unsetBit(bitmap: *u32, n: u32) void {
     bitmap.* &= ~(@as(u32, 1) << n);
 }
 fn testBit(bitmap: u32, n: u32) bool {
-    return (bitmap & (@as(u32, 1) << n)) != 0;
+    if (n >= 32) return false;
+    return (bitmap & (@as(u32, 1) << @intCast(n))) != 0;
 }
 
 fn regionValid(rid: RegionId) bool {

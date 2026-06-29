@@ -36,6 +36,7 @@ pub fn build(b: *std.Build) void {
     });
     sm_exe.root_module.addImport("keystone", keystone_module);
     sm_exe.root_module.addAssemblyFile(b.path("sm/boot.S"));
+    sm_exe.root_module.addAssemblyFile(b.path("sm/trap.S"));
     sm_exe.setLinkerScript(b.path("sm/linker.ld"));
     sm_exe.root_module.code_model = .medany;
     sm_exe.entry = .disabled;
@@ -93,6 +94,7 @@ pub fn build(b: *std.Build) void {
     const qemu_script = b.addSystemCommand(&.{ b.pathFromRoot("scripts/qemu.sh") });
     qemu_script.step.dependOn(&install_sm.step);
     qemu_script.step.dependOn(&install_kernel.step);
+    qemu_script.step.dependOn(&install_enclave.step);
     const qemu_step = b.step("qemu", "Run SM + kernel stub in QEMU virt");
     qemu_step.dependOn(&qemu_script.step);
 }

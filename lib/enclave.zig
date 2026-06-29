@@ -34,7 +34,7 @@ pub const Enclave = struct {
     eid: u32 = invalid_id,
     encl_satp: usize = 0,
     state: State = .invalid,
-    regions: [enclave_regions_max]Region = .{.{}} ** enclave_regions_max,
+    regions: [enclave_regions_max]Region = undefined,
     hash: [sbi.MDSIZE]u8 = .{0} ** sbi.MDSIZE,
     sign: [sbi.SIGNATURE_SIZE]u8 = .{0} ** sbi.SIGNATURE_SIZE,
     params: sbi.RuntimeParams = .{
@@ -48,14 +48,23 @@ pub const Enclave = struct {
         .free_requested = 0,
     },
     n_thread: u32 = 0,
-    threads: [max_encl_threads]thread.ThreadState = .{.{}} ** max_encl_threads,
+    threads: [max_encl_threads]thread.ThreadState = undefined,
 
     pub fn exists(self: *const Enclave) bool {
         return self.state != .invalid;
     }
 };
 
-var enclaves: [max_enclaves]Enclave = .{.{}} ** max_enclaves;
+var enclaves: [max_enclaves]Enclave = undefined;
+
+fn zeroEnclave(e: *Enclave) void {
+    e.* = .{
+        .regions = undefined,
+        .threads = undefined,
+    };
+    for (&e.regions) |*r| r.* = .{};
+    for (&e.threads) |*t| t.* = .{};
+}
 var encl_lock: bool = false; // spinlock stub — single hart
 
 fn lock() void {
@@ -67,9 +76,8 @@ fn unlock() void {
 
 pub fn initMetadata() void {
     for (&enclaves) |*e| {
-        e.* = .{};
+        zeroEnclave(e);
         e.state = .invalid;
-        for (&e.regions) |*r| r.* = .{};
     }
 }
 
@@ -88,7 +96,7 @@ pub fn allocEid(out: *u32) sbi.Error {
     defer unlock();
     for (&enclaves, 0..) |*e, i| {
         if (e.state == .invalid) {
-            e.* = .{};
+            zeroEnclave(e);
             e.state = .allocated;
             e.eid = @intCast(i);
             out.* = @intCast(i);

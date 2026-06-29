@@ -10,7 +10,11 @@ pub const CpuState = struct {
     eid: u32 = enclave.invalid_id,
 };
 
-var cpus: [max_harts]CpuState = .{.{}} ** max_harts;
+var cpus: [max_harts]CpuState = blk: {
+    var arr: [max_harts]CpuState = undefined;
+    for (&arr) |*c| c.* = .{};
+    break :blk arr;
+};
 
 fn hartId() usize {
     const id = csr.read("mhartid");

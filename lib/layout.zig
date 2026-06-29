@@ -3,11 +3,11 @@
 const pmp = @import("pmp.zig");
 
 pub const qemu_virt = struct {
-    pub const uart_base: usize = 0x1000_0000;
-    pub const uart_size: usize = 0x1000;
-
     pub const sm_base: usize = 0x8000_0000;
     pub const sm_size: usize = 0x0010_0000;
+
+    pub const uart_base: usize = 0x1000_0000;
+    pub const uart_size: usize = 0x1000;
 
     pub const kernel_base: usize = 0x8020_0000;
     pub const kernel_size: usize = 0x0100_0000;
@@ -19,9 +19,6 @@ pub const qemu_virt = struct {
     pub const boot_map = pmp.Map{
         .regions = &.{
             .{ .name = "uart", .base = uart_base, .size = uart_size, .perm = .rw, .mode = .napot },
-            .{ .name = "sm", .base = sm_base, .size = sm_size, .perm = .rwx, .mode = .napot },
-            .{ .name = "kernel", .base = kernel_base, .size = kernel_size, .perm = .rwx, .mode = .napot },
-            .{ .name = "enclave_pool", .base = enclave_pool_base, .size = enclave_pool_size, .perm = .none, .mode = .napot },
         },
     };
 
