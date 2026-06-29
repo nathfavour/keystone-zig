@@ -4,6 +4,7 @@
 //! Implementation: native Zig, freestanding, no C/C++ Keystone dependency.
 
 pub const csr = @import("csr.zig");
+pub const gpr = @import("gpr.zig");
 pub const pmp = @import("pmp.zig");
 pub const sbi = @import("sbi.zig");
 pub const enclave = @import("enclave.zig");

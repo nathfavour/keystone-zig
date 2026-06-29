@@ -1,5 +1,5 @@
 OUTPUT_ARCH(riscv)
-ENTRY(enclave_main)
+ENTRY(_start)
 
 MEMORY {
     ENCLAVE (rxa) : ORIGIN = 0x90000000, LENGTH = 4M

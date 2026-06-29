@@ -1,3 +1,6 @@
-.zig-cache/
 zig-out/
+.zig-cache/
 *.o
+*.elf
+*.bin
+.DS_Store

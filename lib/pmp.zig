@@ -48,12 +48,11 @@ pub const Region = struct {
     pub fn napotAddr(self: Region) usize {
         std.debug.assert(self.mode == .napot);
         std.debug.assert(self.size >= granule and std.math.isPowerOfTwo(self.size));
-        const pmp_granule_mask: usize = granule - 1;
         return (self.base >> 2) | ((self.size >> 3) - 1);
     }
 
     pub fn cfgByte(self: Region) u8 {
-        return self.perm.toPmpCfg() | (@intFromEnum(self.mode) << 3) | 0x80; // L=locked in M-mode
+        return self.perm.toPmpCfg() | (@as(u8, @intFromEnum(self.mode)) << 3) | 0x80;
     }
 };
 
@@ -101,12 +100,12 @@ test "napot encoding" {
 }
 
 test "comptime map accepts valid layout" {
-    const good = pmp.Map{
+    const good = Map{
         .regions = &.{
             .{ .name = "a", .base = 0x8000_0000, .size = 0x1000_0000, .perm = .rwx },
             .{ .name = "b", .base = 0x9000_0000, .size = 0x1000_0000, .perm = .rw },
         },
     };
-    comptime pmp.Map.validate(good);
-    try std.testing.expectEqual(@as(usize, 2), pmp.Map.entryCount(good));
+    comptime Map.validate(good);
+    try std.testing.expectEqual(@as(usize, 2), Map.entryCount(good));
 }

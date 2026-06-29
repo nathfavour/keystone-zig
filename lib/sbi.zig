@@ -92,6 +92,6 @@ pub inline fn ecall(
           [a3] "{a3}" (arg3),
           [a4] "{a4}" (arg4),
           [a5] "{a5}" (arg5),
-        : "memory");
+    );
     return .{ .error_code = @intCast(err), .value = val };
 }

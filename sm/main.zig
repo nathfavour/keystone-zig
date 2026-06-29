@@ -7,6 +7,7 @@
 
 const keystone = @import("keystone");
 const csr = keystone.csr;
+const gpr = keystone.gpr;
 const pmp = keystone.pmp;
 const sbi = keystone.sbi;
 const enclave = keystone.enclave;
@@ -34,52 +35,92 @@ fn installTrapVector() void {
 }
 
 fn applyBootPmpMap() void {
-    comptime const map = layout.qemu_virt.boot_map;
+    const map = comptime layout.qemu_virt.boot_map;
     comptime pmp.Map.validate(map);
 
     inline for (map.regions, 0..) |region, entry| {
-        const addr = region.napotAddr();
-        const cfg = region.cfgByte();
-        writePmpEntry(@intCast(entry), addr, cfg);
+        writePmpEntry(@intCast(entry), region.napotAddr(), region.cfgByte());
     }
     csr.sfence_vma();
     uart.write("keystone-zig SM: PMP map applied\r\n");
 }
 
 fn writePmpEntry(entry: u8, pmpaddr: usize, cfg_byte: u8) void {
-    // RV64: entries 0-7 → pmpcfg0, 8-15 → pmpcfg2
     const slot = entry % 8;
-    const cfg_csr: []const u8 = if (entry < 8) "pmpcfg0" else "pmpcfg2";
-
-    switch (entry) {
-        0 => csr.write("pmpaddr0", pmpaddr),
-        1 => csr.write("pmpaddr1", pmpaddr),
-        2 => csr.write("pmpaddr2", pmpaddr),
-        3 => csr.write("pmpaddr3", pmpaddr),
-        4 => csr.write("pmpaddr4", pmpaddr),
-        5 => csr.write("pmpaddr5", pmpaddr),
-        6 => csr.write("pmpaddr6", pmpaddr),
-        7 => csr.write("pmpaddr7", pmpaddr),
-        8 => csr.write("pmpaddr8", pmpaddr),
-        9 => csr.write("pmpaddr9", pmpaddr),
-        10 => csr.write("pmpaddr10", pmpaddr),
-        11 => csr.write("pmpaddr11", pmpaddr),
-        12 => csr.write("pmpaddr12", pmpaddr),
-        13 => csr.write("pmpaddr13", pmpaddr),
-        14 => csr.write("pmpaddr14", pmpaddr),
-        15 => csr.write("pmpaddr15", pmpaddr),
-        else => unreachable,
-    }
-
     const shift: u6 = @intCast(slot * 8);
     const mask: usize = ~(@as(usize, 0xFF) << shift);
-    const old = csr.read(cfg_csr);
-    const new_cfg = (old & mask) | (@as(usize, cfg_byte) << shift);
-    csr.write(cfg_csr, new_cfg);
+    const cfg_val: usize = @as(usize, cfg_byte) << shift;
+
+    switch (entry) {
+        0 => {
+            csr.write("pmpaddr0", pmpaddr);
+            csr.write("pmpcfg0", (csr.read("pmpcfg0") & mask) | cfg_val);
+        },
+        1 => {
+            csr.write("pmpaddr1", pmpaddr);
+            csr.write("pmpcfg0", (csr.read("pmpcfg0") & mask) | cfg_val);
+        },
+        2 => {
+            csr.write("pmpaddr2", pmpaddr);
+            csr.write("pmpcfg0", (csr.read("pmpcfg0") & mask) | cfg_val);
+        },
+        3 => {
+            csr.write("pmpaddr3", pmpaddr);
+            csr.write("pmpcfg0", (csr.read("pmpcfg0") & mask) | cfg_val);
+        },
+        4 => {
+            csr.write("pmpaddr4", pmpaddr);
+            csr.write("pmpcfg0", (csr.read("pmpcfg0") & mask) | cfg_val);
+        },
+        5 => {
+            csr.write("pmpaddr5", pmpaddr);
+            csr.write("pmpcfg0", (csr.read("pmpcfg0") & mask) | cfg_val);
+        },
+        6 => {
+            csr.write("pmpaddr6", pmpaddr);
+            csr.write("pmpcfg0", (csr.read("pmpcfg0") & mask) | cfg_val);
+        },
+        7 => {
+            csr.write("pmpaddr7", pmpaddr);
+            csr.write("pmpcfg0", (csr.read("pmpcfg0") & mask) | cfg_val);
+        },
+        8 => {
+            csr.write("pmpaddr8", pmpaddr);
+            csr.write("pmpcfg2", (csr.read("pmpcfg2") & mask) | cfg_val);
+        },
+        9 => {
+            csr.write("pmpaddr9", pmpaddr);
+            csr.write("pmpcfg2", (csr.read("pmpcfg2") & mask) | cfg_val);
+        },
+        10 => {
+            csr.write("pmpaddr10", pmpaddr);
+            csr.write("pmpcfg2", (csr.read("pmpcfg2") & mask) | cfg_val);
+        },
+        11 => {
+            csr.write("pmpaddr11", pmpaddr);
+            csr.write("pmpcfg2", (csr.read("pmpcfg2") & mask) | cfg_val);
+        },
+        12 => {
+            csr.write("pmpaddr12", pmpaddr);
+            csr.write("pmpcfg2", (csr.read("pmpcfg2") & mask) | cfg_val);
+        },
+        13 => {
+            csr.write("pmpaddr13", pmpaddr);
+            csr.write("pmpcfg2", (csr.read("pmpcfg2") & mask) | cfg_val);
+        },
+        14 => {
+            csr.write("pmpaddr14", pmpaddr);
+            csr.write("pmpcfg2", (csr.read("pmpcfg2") & mask) | cfg_val);
+        },
+        15 => {
+            csr.write("pmpaddr15", pmpaddr);
+            csr.write("pmpcfg2", (csr.read("pmpcfg2") & mask) | cfg_val);
+        },
+        else => unreachable,
+    }
 }
 
 fn delegateToSupervisor() void {
-    // Delegate supervisor timer/software/external interrupts to S-mode.
     csr.write("mideleg", 0x222);
     csr.write("medeleg", 0xB1FF);
 }
@@ -91,20 +132,19 @@ fn enterSupervisor(entry: *const fn () noreturn) noreturn {
     mstatus.mpie = 1;
     csr.write("mstatus", @bitCast(mstatus));
     csr.write("mepc", @intFromPtr(entry));
-    csr.write("satp", 0); // kernel brings up its own page tables later
+    csr.write("satp", 0);
     asm volatile (
         \\ mv sp, %[sp]
         \\ mret
         :
         : [sp] "r" (kernel_sp),
-        : "memory"
     );
     unreachable;
 }
 
-export fn mTrapHandler() callconv(.riscv_interrupt) void {
+export fn mTrapHandler() void {
     const mcause = csr.read("mcause");
-    const is_ecall = (mcause & (1 << 63)) == 0 and (mcause & 0xFF) == 11; // environment call from S-mode
+    const is_ecall = (mcause & (1 << 63)) == 0 and (mcause & 0xFF) == 11;
 
     if (is_ecall) {
         handleSbiEcall();
@@ -116,15 +156,15 @@ export fn mTrapHandler() callconv(.riscv_interrupt) void {
 }
 
 fn handleSbiEcall() void {
-    const ext: u32 = @truncate(csr.read("a7"));
-    const fid: u32 = @truncate(csr.read("a6"));
+    const ext: u32 = @truncate(gpr.read("a7"));
+    const fid: u32 = @truncate(gpr.read("a6"));
 
     if (ext != sbi.extension_id) {
         returnSbi(.{ .error_code = @intFromEnum(sbi.Error.not_implemented), .value = 0 });
         return;
     }
 
-    const ret: sbi.SbiRet = switch (@enumFromInt(fid)) {
+    const ret: sbi.SbiRet = switch (@as(sbi.Fid, @enumFromInt(fid))) {
         .create_enclave => smCreateEnclave(),
         .destroy_enclave => smDestroyEnclave(),
         .run_enclave => smRunEnclave(),
@@ -138,7 +178,7 @@ fn handleSbiEcall() void {
 }
 
 fn smCreateEnclave() sbi.SbiRet {
-    const args_ptr: usize = csr.read("a0");
+    const args_ptr: usize = gpr.read("a0");
     const args: sbi.CreateArgs = @as(*const sbi.CreateArgs, @ptrFromInt(args_ptr)).*;
 
     const err = enclave.validateCreateArgs(args);
@@ -148,7 +188,7 @@ fn smCreateEnclave() sbi.SbiRet {
     const slot = enclaves.get(eid).?;
 
     slot.regions[0] = .{
-        .pmp_entry = 4, // enclave_pool entry — assigned dynamically in phase 2
+        .pmp_entry = 4,
         .region_type = .epm,
         .base = args.epm_paddr,
         .size = args.epm_size,
@@ -177,13 +217,12 @@ fn smCreateEnclave() sbi.SbiRet {
 }
 
 fn smDestroyEnclave() sbi.SbiRet {
-    const eid: u32 = @truncate(csr.read("a0"));
-    const err = enclaves.destroy(eid);
-    return err.toSbiRet();
+    const eid: u32 = @truncate(gpr.read("a0"));
+    return enclaves.destroy(eid).toSbiRet();
 }
 
 fn smRunEnclave() sbi.SbiRet {
-    const eid: u32 = @truncate(csr.read("a0"));
+    const eid: u32 = @truncate(gpr.read("a0"));
     const slot = enclaves.get(eid) orelse return sbi.Error.invalid_id.toSbiRet();
     if (slot.state != .fresh and slot.state != .stopped) return sbi.Error.not_runnable.toSbiRet();
 
@@ -200,7 +239,6 @@ fn smResumeEnclave() sbi.SbiRet {
 }
 
 fn smStopEnclave() sbi.SbiRet {
-    // Enclave yields back to host — context restored by trap return path
     return .{ .error_code = 0, .value = 0 };
 }
 
@@ -215,13 +253,12 @@ fn smExitEnclave() sbi.SbiRet {
 fn contextSwitchToEnclave(slot: *enclave.Enclave, first_run: bool) void {
     _ = slot;
     _ = first_run;
-    // Phase 2: swap PMP permissions, swap satp, set mepc to enclave entry.
     uart.write("keystone-zig SM: enclave context switch (stub)\r\n");
 }
 
 fn returnSbi(ret: sbi.SbiRet) void {
-    csr.write("a0", @as(usize, @bitCast(ret.error_code)));
-    csr.write("a1", ret.value);
+    gpr.write("a0", @as(usize, @intCast(ret.error_code)));
+    gpr.write("a1", ret.value);
     const mepc = csr.read("mepc");
     csr.write("mepc", mepc + 4);
 }

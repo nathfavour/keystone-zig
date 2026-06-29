@@ -51,10 +51,12 @@ pub const Enclave = struct {
 };
 
 pub const Table = struct {
-    slots: [max_enclaves]Enclave = .{.{}} ** max_enclaves,
+    slots: [max_enclaves]Enclave,
 
     pub fn init() Table {
-        return .{};
+        var table: Table = undefined;
+        for (&table.slots) |*slot| slot.* = .{};
+        return table;
     }
 
     pub fn allocate(self: *Table) ?u32 {

@@ -6,8 +6,7 @@ const keystone = @import("keystone");
 const sbi = keystone.sbi;
 const uart = keystone.uart;
 
-export fn enclave_main(params: sbi.RuntimeParams) void {
-    _ = params;
+export fn enclave_main() void {
     uart.write("enclave-hello: inside secure bubble\r\n");
 
     _ = sbi.ecall(
@@ -15,4 +14,11 @@ export fn enclave_main(params: sbi.RuntimeParams) void {
         @intFromEnum(sbi.Fid.exit_enclave),
         0, 0, 0, 0, 0, 0,
     );
+}
+
+export fn _start() noreturn {
+    enclave_main();
+    while (true) {
+        keystone.csr.wfi();
+    }
 }

@@ -60,9 +60,9 @@ pub inline fn wfi() void {
 }
 
 pub inline fn fence() void {
-    asm volatile ("fence" ::: "memory");
+    asm volatile ("fence");
 }
 
 pub inline fn sfence_vma() void {
-    asm volatile ("sfence.vma" ::: "memory");
+    asm volatile ("sfence.vma");
 }

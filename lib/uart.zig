@@ -1,5 +1,6 @@
 //! QEMU virt UART (16550) — minimal polled TX for early SM debug.
 
+const std = @import("std");
 const layout = @import("layout.zig");
 
 const uart_base = layout.qemu_virt.uart_base;
@@ -17,9 +18,7 @@ pub fn write(bytes: []const u8) void {
 }
 
 pub fn print(comptime fmt: []const u8, args: anytype) void {
-    comptime var buf: [256]u8 = undefined;
-    const formatted = std.fmt.comptimePrint(fmt, args);
+    var buf: [128]u8 = undefined;
+    const formatted = std.fmt.bufPrint(&buf, fmt, args) catch return;
     write(formatted);
 }
-
-const std = @import("std");
