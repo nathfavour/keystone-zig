@@ -93,14 +93,21 @@
     LOAD_GPR 29, t4
     LOAD_GPR 30, t5
     LOAD_GPR 31, t6
-    ld sp, 2*8(sp)
-    addi sp, sp, TRAP_SIZE
+    ld      t0, 2*8(sp)
+    addi    sp, sp, TRAP_SIZE
+    mv      sp, t0
 .endm
 
 mTrapHandler:
 trapVectorEnclave:
+    # Swap to SM trap stack; mscratch holds guest sp after exchange.
+    csrrw   sp, mscratch, sp
     SAVE_FRAME
-    mv a0, sp
-    call handleMachineTrap
+    csrr    t0, mscratch
+    sd      t0, 2*8(sp)
+    mv      a0, sp
+    call    handleMachineTrap
+    la      t1, _sm_stack_top
+    csrw    mscratch, t1
     RESTORE_FRAME
     mret

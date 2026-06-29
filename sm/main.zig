@@ -27,14 +27,25 @@ export fn smEntry() noreturn {
 
     delegateToSupervisor();
     threadHostVector();
+    initTrapStack();
 
     uart.write("keystone-zig SM: entering S-mode kernel\r\n");
-    enterSupervisor(layout.qemu_virt.kernel_entry);
+    const kernel_sp: usize = layout.qemu_virt.kernel_base + layout.qemu_virt.kernel_size - 16;
+    drop_to_supervisor(layout.qemu_virt.kernel_entry, kernel_sp);
 }
+
+extern fn drop_to_supervisor(entry: usize, sp: usize) noreturn;
 
 fn threadHostVector() void {
     csr.write("mtvec", @intFromPtr(&mTrapHandler));
 }
+
+fn initTrapStack() void {
+    // mscratch = SM stack top; swapped with guest sp on each M-mode trap.
+    csr.write("mscratch", @intFromPtr(&_sm_stack_top));
+}
+
+extern _sm_stack_top: usize;
 
 fn delegateToSupervisor() void {
     // Kernel sets these once its trap vector is live.
@@ -42,19 +53,12 @@ fn delegateToSupervisor() void {
     csr.write("medeleg", 0);
 }
 
-extern fn drop_to_supervisor(entry: usize, sp: usize) noreturn;
-
-fn enterSupervisor(entry: usize) noreturn {
-    const kernel_sp: usize = layout.qemu_virt.kernel_base + layout.qemu_virt.kernel_size - 16;
-    drop_to_supervisor(entry, kernel_sp);
-}
-
 export fn handleMachineTrap(regs_ptr: *trap_regs.TrapRegs) void {
     const mcause = csr.read("mcause");
     const is_interrupt = (mcause >> 63) != 0;
     const code = mcause & 0xFF;
 
-    if (!is_interrupt and code == 11) {
+    if (!is_interrupt and (code == 8 or code == 9 or code == 11)) {
         handleSbiEcall(regs_ptr);
         return;
     }

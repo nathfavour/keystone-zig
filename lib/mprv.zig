@@ -27,11 +27,7 @@ pub fn copyFromSm(dst: usize, src_buf: []const u8) bool {
 }
 
 pub fn memsetPhys(addr: usize, value: u8, len: usize) void {
-    const old = csr.read("mstatus");
-    csr.write("mstatus", old | MSTATUS_MPRV | (PRV_S << MSTATUS_MPP_SHIFT));
-    var i: usize = 0;
-    while (i < len) : (i += 1) {
-        @as(*volatile u8, @ptrFromInt(addr + i)).* = value;
-    }
-    csr.write("mstatus", old);
+    if (len == 0) return;
+    const dst = @as([*]u8, @ptrFromInt(addr))[0..len];
+    @memset(dst, value);
 }

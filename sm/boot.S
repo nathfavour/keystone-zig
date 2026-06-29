@@ -13,3 +13,9 @@ _start:
 _stack_bottom:
     .space  8192
 _stack_top:
+
+.section .bss.trap
+.align 16
+_sm_stack_bottom:
+    .space  8192
+_sm_stack_top:

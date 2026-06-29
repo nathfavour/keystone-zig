@@ -13,7 +13,7 @@ pub const PMP_W: u8 = 0x02;
 pub const PMP_X: u8 = 0x04;
 pub const PMP_ALL_PERM: u8 = PMP_R | PMP_W | PMP_X;
 pub const PMP_NO_PERM: u8 = 0;
-pub const PMP_A_NAPOT: u8 = 3;
+pub const PMP_A_NAPOT: u8 = 3 << 3;
 
 pub const Priority = enum { any, top, bottom };
 pub const RegionId = i32;

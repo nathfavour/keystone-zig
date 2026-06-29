@@ -1,0 +1,1303 @@
+//! Field arithmetic over GF(2^255-19) — port of `fe.c`.
+
+pub const Fe = [10]i32;
+
+
+fn load3(in: [*]const u8) u64 {
+    var result: u64 = @as(u64, in[0]);
+    result |= @as(u64, in[1]) << 8;
+    result |= @as(u64, in[2]) << 16;
+    return result;
+}
+
+fn load4(in: [*]const u8) u64 {
+    var result: u64 = @as(u64, in[0]);
+    result |= @as(u64, in[1]) << 8;
+    result |= @as(u64, in[2]) << 16;
+    result |= @as(u64, in[3]) << 24;
+    return result;
+}
+
+
+
+
+
+
+
+
+
+
+
+pub fn fe_0(h: *Fe) void {
+    h[0] = 0;
+    h[1] = 0;
+    h[2] = 0;
+    h[3] = 0;
+    h[4] = 0;
+    h[5] = 0;
+    h[6] = 0;
+    h[7] = 0;
+    h[8] = 0;
+    h[9] = 0;
+}
+
+
+
+
+
+pub fn fe_1(h: *Fe) void {
+    h[0] = 1;
+    h[1] = 0;
+    h[2] = 0;
+    h[3] = 0;
+    h[4] = 0;
+    h[5] = 0;
+    h[6] = 0;
+    h[7] = 0;
+    h[8] = 0;
+    h[9] = 0;
+}
+
+
+
+
+
+pub fn fe_add(h: *Fe, f: Fe, g: Fe) void {
+    var f0: i32 = f[0];
+    var f1: i32 = f[1];
+    var f2: i32 = f[2];
+    var f3: i32 = f[3];
+    var f4: i32 = f[4];
+    var f5: i32 = f[5];
+    var f6: i32 = f[6];
+    var f7: i32 = f[7];
+    var f8: i32 = f[8];
+    var f9: i32 = f[9];
+    var g0: i32 = g[0];
+    var g1: i32 = g[1];
+    var g2: i32 = g[2];
+    var g3: i32 = g[3];
+    var g4: i32 = g[4];
+    var g5: i32 = g[5];
+    var g6: i32 = g[6];
+    var g7: i32 = g[7];
+    var g8: i32 = g[8];
+    var g9: i32 = g[9];
+    var h0: i32 = f0 + g0;
+    var h1: i32 = f1 + g1;
+    var h2: i32 = f2 + g2;
+    var h3: i32 = f3 + g3;
+    var h4: i32 = f4 + g4;
+    var h5: i32 = f5 + g5;
+    var h6: i32 = f6 + g6;
+    var h7: i32 = f7 + g7;
+    var h8: i32 = f8 + g8;
+    var h9: i32 = f9 + g9;
+
+    h[0] = h0;
+    h[1] = h1;
+    h[2] = h2;
+    h[3] = h3;
+    h[4] = h4;
+    h[5] = h5;
+    h[6] = h6;
+    h[7] = h7;
+    h[8] = h8;
+    h[9] = h9;
+}
+
+
+
+
+
+pub fn fe_cmov(f: *Fe, g: Fe, b: u32) void {
+    var f0: i32 = f[0];
+    var f1: i32 = f[1];
+    var f2: i32 = f[2];
+    var f3: i32 = f[3];
+    var f4: i32 = f[4];
+    var f5: i32 = f[5];
+    var f6: i32 = f[6];
+    var f7: i32 = f[7];
+    var f8: i32 = f[8];
+    var f9: i32 = f[9];
+    var g0: i32 = g[0];
+    var g1: i32 = g[1];
+    var g2: i32 = g[2];
+    var g3: i32 = g[3];
+    var g4: i32 = g[4];
+    var g5: i32 = g[5];
+    var g6: i32 = g[6];
+    var g7: i32 = g[7];
+    var g8: i32 = g[8];
+    var g9: i32 = g[9];
+    var x0: i32 = f0 ^ g0;
+    var x1: i32 = f1 ^ g1;
+    var x2: i32 = f2 ^ g2;
+    var x3: i32 = f3 ^ g3;
+    var x4: i32 = f4 ^ g4;
+    var x5: i32 = f5 ^ g5;
+    var x6: i32 = f6 ^ g6;
+    var x7: i32 = f7 ^ g7;
+    var x8: i32 = f8 ^ g8;
+    var x9: i32 = f9 ^ g9;
+
+    b = 0 -% b; 
+    x0 &= b;
+    x1 &= b;
+    x2 &= b;
+    x3 &= b;
+    x4 &= b;
+    x5 &= b;
+    x6 &= b;
+    x7 &= b;
+    x8 &= b;
+    x9 &= b;
+
+    f[0] = f0 ^ x0;
+    f[1] = f1 ^ x1;
+    f[2] = f2 ^ x2;
+    f[3] = f3 ^ x3;
+    f[4] = f4 ^ x4;
+    f[5] = f5 ^ x5;
+    f[6] = f6 ^ x6;
+    f[7] = f7 ^ x7;
+    f[8] = f8 ^ x8;
+    f[9] = f9 ^ x9;
+}
+
+
+
+pub fn fe_cswap(f: *Fe, g: *Fe, b: u32) void {
+    var f0: i32 = f[0];
+    var f1: i32 = f[1];
+    var f2: i32 = f[2];
+    var f3: i32 = f[3];
+    var f4: i32 = f[4];
+    var f5: i32 = f[5];
+    var f6: i32 = f[6];
+    var f7: i32 = f[7];
+    var f8: i32 = f[8];
+    var f9: i32 = f[9];
+    var g0: i32 = g[0];
+    var g1: i32 = g[1];
+    var g2: i32 = g[2];
+    var g3: i32 = g[3];
+    var g4: i32 = g[4];
+    var g5: i32 = g[5];
+    var g6: i32 = g[6];
+    var g7: i32 = g[7];
+    var g8: i32 = g[8];
+    var g9: i32 = g[9];
+    var x0: i32 = f0 ^ g0;
+    var x1: i32 = f1 ^ g1;
+    var x2: i32 = f2 ^ g2;
+    var x3: i32 = f3 ^ g3;
+    var x4: i32 = f4 ^ g4;
+    var x5: i32 = f5 ^ g5;
+    var x6: i32 = f6 ^ g6;
+    var x7: i32 = f7 ^ g7;
+    var x8: i32 = f8 ^ g8;
+    var x9: i32 = f9 ^ g9;
+    b = 0 -% b; 
+    x0 &= b;
+    x1 &= b;
+    x2 &= b;
+    x3 &= b;
+    x4 &= b;
+    x5 &= b;
+    x6 &= b;
+    x7 &= b;
+    x8 &= b;
+    x9 &= b;
+    f[0] = f0 ^ x0;
+    f[1] = f1 ^ x1;
+    f[2] = f2 ^ x2;
+    f[3] = f3 ^ x3;
+    f[4] = f4 ^ x4;
+    f[5] = f5 ^ x5;
+    f[6] = f6 ^ x6;
+    f[7] = f7 ^ x7;
+    f[8] = f8 ^ x8;
+    f[9] = f9 ^ x9;
+    g[0] = g0 ^ x0;
+    g[1] = g1 ^ x1;
+    g[2] = g2 ^ x2;
+    g[3] = g3 ^ x3;
+    g[4] = g4 ^ x4;
+    g[5] = g5 ^ x5;
+    g[6] = g6 ^ x6;
+    g[7] = g7 ^ x7;
+    g[8] = g8 ^ x8;
+    g[9] = g9 ^ x9;
+}
+
+
+
+
+
+pub fn fe_copy(h: *Fe, f: Fe) void {
+    var f0: i32 = f[0];
+    var f1: i32 = f[1];
+    var f2: i32 = f[2];
+    var f3: i32 = f[3];
+    var f4: i32 = f[4];
+    var f5: i32 = f[5];
+    var f6: i32 = f[6];
+    var f7: i32 = f[7];
+    var f8: i32 = f[8];
+    var f9: i32 = f[9];
+
+    h[0] = f0;
+    h[1] = f1;
+    h[2] = f2;
+    h[3] = f3;
+    h[4] = f4;
+    h[5] = f5;
+    h[6] = f6;
+    h[7] = f7;
+    h[8] = f8;
+    h[9] = f9;
+}
+
+
+
+
+
+pub fn fe_frombytes(h: *Fe, s: [*]const u8) void {
+    var h0: i64 = load4(s);
+    var h1: i64 = load3(s + 4) << 6;
+    var h2: i64 = load3(s + 7) << 5;
+    var h3: i64 = load3(s + 10) << 3;
+    var h4: i64 = load3(s + 13) << 2;
+    var h5: i64 = load4(s + 16);
+    var h6: i64 = load3(s + 20) << 7;
+    var h7: i64 = load3(s + 23) << 5;
+    var h8: i64 = load3(s + 26) << 4;
+    var h9: i64 = (load3(s + 29) & 8388607) << 2;
+    var carry0: i64 = undefined;
+    var carry1: i64 = undefined;
+    var carry2: i64 = undefined;
+    var carry3: i64 = undefined;
+    var carry4: i64 = undefined;
+    var carry5: i64 = undefined;
+    var carry6: i64 = undefined;
+    var carry7: i64 = undefined;
+    var carry8: i64 = undefined;
+    var carry9: i64 = undefined;
+
+    carry9 = (h9 + @as(i64, 1 << 24)) >> 25;
+    h0 += carry9 * 19;
+    h9 -= carry9 << 25;
+    carry1 = (h1 + @as(i64, 1 << 24)) >> 25;
+    h2 += carry1;
+    h1 -= carry1 << 25;
+    carry3 = (h3 + @as(i64, 1 << 24)) >> 25;
+    h4 += carry3;
+    h3 -= carry3 << 25;
+    carry5 = (h5 + @as(i64, 1 << 24)) >> 25;
+    h6 += carry5;
+    h5 -= carry5 << 25;
+    carry7 = (h7 + @as(i64, 1 << 24)) >> 25;
+    h8 += carry7;
+    h7 -= carry7 << 25;
+    carry0 = (h0 + @as(i64, 1 << 25)) >> 26;
+    h1 += carry0;
+    h0 -= carry0 << 26;
+    carry2 = (h2 + @as(i64, 1 << 25)) >> 26;
+    h3 += carry2;
+    h2 -= carry2 << 26;
+    carry4 = (h4 + @as(i64, 1 << 25)) >> 26;
+    h5 += carry4;
+    h4 -= carry4 << 26;
+    carry6 = (h6 + @as(i64, 1 << 25)) >> 26;
+    h7 += carry6;
+    h6 -= carry6 << 26;
+    carry8 = (h8 + @as(i64, 1 << 25)) >> 26;
+    h9 += carry8;
+    h8 -= carry8 << 26;
+
+    h[0] = @as(i32, @intCast(h0));
+    h[1] = @as(i32, @intCast(h1));
+    h[2] = @as(i32, @intCast(h2));
+    h[3] = @as(i32, @intCast(h3));
+    h[4] = @as(i32, @intCast(h4));
+    h[5] = @as(i32, @intCast(h5));
+    h[6] = @as(i32, @intCast(h6));
+    h[7] = @as(i32, @intCast(h7));
+    h[8] = @as(i32, @intCast(h8));
+    h[9] = @as(i32, @intCast(h9));
+}
+
+
+
+pub fn fe_invert(out: *Fe, z: Fe) void {
+    var t0: Fe = undefined;
+    var t1: Fe = undefined;
+    var t2: Fe = undefined;
+    var t3: Fe = undefined;
+    var i: i32 = undefined;
+
+    fe_sq(t0, z);
+
+    
+
+    fe_sq(t1, t0);
+
+    for (0..1) |_| {
+        fe_sq(t1, t1);
+    }
+
+    fe_mul(t1, z, t1);
+    fe_mul(t0, t0, t1);
+    fe_sq(t2, t0);
+
+    
+
+    fe_mul(t1, t1, t2);
+    fe_sq(t2, t1);
+
+    for (0..4) |_| {
+        fe_sq(t2, t2);
+    }
+
+    fe_mul(t1, t2, t1);
+    fe_sq(t2, t1);
+
+    for (0..9) |_| {
+        fe_sq(t2, t2);
+    }
+
+    fe_mul(t2, t2, t1);
+    fe_sq(t3, t2);
+
+    for (0..19) |_| {
+        fe_sq(t3, t3);
+    }
+
+    fe_mul(t2, t3, t2);
+    fe_sq(t2, t2);
+
+    for (0..9) |_| {
+        fe_sq(t2, t2);
+    }
+
+    fe_mul(t1, t2, t1);
+    fe_sq(t2, t1);
+
+    for (0..49) |_| {
+        fe_sq(t2, t2);
+    }
+
+    fe_mul(t2, t2, t1);
+    fe_sq(t3, t2);
+
+    for (0..99) |_| {
+        fe_sq(t3, t3);
+    }
+
+    fe_mul(t2, t3, t2);
+    fe_sq(t2, t2);
+
+    for (0..49) |_| {
+        fe_sq(t2, t2);
+    }
+
+    fe_mul(t1, t2, t1);
+    fe_sq(t1, t1);
+
+    for (0..4) |_| {
+        fe_sq(t1, t1);
+    }
+
+    fe_mul(out, t1, t0);
+}
+
+
+
+
+
+pub fn fe_isnegative(f: Fe) i32 {
+    var s: [32]u8 = undefined;
+    fe_tobytes(&s, f);
+    return s[0] & 1;
+}
+
+
+
+
+
+pub fn fe_isnonzero(f: Fe) i32 {
+    u8 s[32];
+    u8 r;
+
+    fe_tobytes(s, f);
+
+    r = s[0];
+
+
+    return r != 0;
+}
+
+
+
+
+
+
+
+pub fn fe_mul(h: *Fe, f: Fe, g: Fe) void {
+    var f0: i32 = f[0];
+    var f1: i32 = f[1];
+    var f2: i32 = f[2];
+    var f3: i32 = f[3];
+    var f4: i32 = f[4];
+    var f5: i32 = f[5];
+    var f6: i32 = f[6];
+    var f7: i32 = f[7];
+    var f8: i32 = f[8];
+    var f9: i32 = f[9];
+    var g0: i32 = g[0];
+    var g1: i32 = g[1];
+    var g2: i32 = g[2];
+    var g3: i32 = g[3];
+    var g4: i32 = g[4];
+    var g5: i32 = g[5];
+    var g6: i32 = g[6];
+    var g7: i32 = g[7];
+    var g8: i32 = g[8];
+    var g9: i32 = g[9];
+    var g1_19: i32 = 19 * g1;
+    var g2_19: i32 = 19 * g2;
+    var g3_19: i32 = 19 * g3;
+    var g4_19: i32 = 19 * g4;
+    var g5_19: i32 = 19 * g5;
+    var g6_19: i32 = 19 * g6;
+    var g7_19: i32 = 19 * g7;
+    var g8_19: i32 = 19 * g8;
+    var g9_19: i32 = 19 * g9;
+    var f1_2: i32 = 2 * f1;
+    var f3_2: i32 = 2 * f3;
+    var f5_2: i32 = 2 * f5;
+    var f7_2: i32 = 2 * f7;
+    var f9_2: i32 = 2 * f9;
+    var f0g0: i64 = f0   * @as(i64, g0;
+    var f0g1: i64 = f0   * @as(i64, g1;
+    var f0g2: i64 = f0   * @as(i64, g2;
+    var f0g3: i64 = f0   * @as(i64, g3;
+    var f0g4: i64 = f0   * @as(i64, g4;
+    var f0g5: i64 = f0   * @as(i64, g5;
+    var f0g6: i64 = f0   * @as(i64, g6;
+    var f0g7: i64 = f0   * @as(i64, g7;
+    var f0g8: i64 = f0   * @as(i64, g8;
+    var f0g9: i64 = f0   * @as(i64, g9;
+    var f1g0: i64 = f1   * @as(i64, g0;
+    var f1g1_2: i64 = f1_2 * @as(i64, g1;
+    var f1g2: i64 = f1   * @as(i64, g2;
+    var f1g3_2: i64 = f1_2 * @as(i64, g3;
+    var f1g4: i64 = f1   * @as(i64, g4;
+    var f1g5_2: i64 = f1_2 * @as(i64, g5;
+    var f1g6: i64 = f1   * @as(i64, g6;
+    var f1g7_2: i64 = f1_2 * @as(i64, g7;
+    var f1g8: i64 = f1   * @as(i64, g8;
+    var f1g9_38: i64 = f1_2 * @as(i64, g9_19;
+    var f2g0: i64 = f2   * @as(i64, g0;
+    var f2g1: i64 = f2   * @as(i64, g1;
+    var f2g2: i64 = f2   * @as(i64, g2;
+    var f2g3: i64 = f2   * @as(i64, g3;
+    var f2g4: i64 = f2   * @as(i64, g4;
+    var f2g5: i64 = f2   * @as(i64, g5;
+    var f2g6: i64 = f2   * @as(i64, g6;
+    var f2g7: i64 = f2   * @as(i64, g7;
+    var f2g8_19: i64 = f2   * @as(i64, g8_19;
+    var f2g9_19: i64 = f2   * @as(i64, g9_19;
+    var f3g0: i64 = f3   * @as(i64, g0;
+    var f3g1_2: i64 = f3_2 * @as(i64, g1;
+    var f3g2: i64 = f3   * @as(i64, g2;
+    var f3g3_2: i64 = f3_2 * @as(i64, g3;
+    var f3g4: i64 = f3   * @as(i64, g4;
+    var f3g5_2: i64 = f3_2 * @as(i64, g5;
+    var f3g6: i64 = f3   * @as(i64, g6;
+    var f3g7_38: i64 = f3_2 * @as(i64, g7_19;
+    var f3g8_19: i64 = f3   * @as(i64, g8_19;
+    var f3g9_38: i64 = f3_2 * @as(i64, g9_19;
+    var f4g0: i64 = f4   * @as(i64, g0;
+    var f4g1: i64 = f4   * @as(i64, g1;
+    var f4g2: i64 = f4   * @as(i64, g2;
+    var f4g3: i64 = f4   * @as(i64, g3;
+    var f4g4: i64 = f4   * @as(i64, g4;
+    var f4g5: i64 = f4   * @as(i64, g5;
+    var f4g6_19: i64 = f4   * @as(i64, g6_19;
+    var f4g7_19: i64 = f4   * @as(i64, g7_19;
+    var f4g8_19: i64 = f4   * @as(i64, g8_19;
+    var f4g9_19: i64 = f4   * @as(i64, g9_19;
+    var f5g0: i64 = f5   * @as(i64, g0;
+    var f5g1_2: i64 = f5_2 * @as(i64, g1;
+    var f5g2: i64 = f5   * @as(i64, g2;
+    var f5g3_2: i64 = f5_2 * @as(i64, g3;
+    var f5g4: i64 = f5   * @as(i64, g4;
+    var f5g5_38: i64 = f5_2 * @as(i64, g5_19;
+    var f5g6_19: i64 = f5   * @as(i64, g6_19;
+    var f5g7_38: i64 = f5_2 * @as(i64, g7_19;
+    var f5g8_19: i64 = f5   * @as(i64, g8_19;
+    var f5g9_38: i64 = f5_2 * @as(i64, g9_19;
+    var f6g0: i64 = f6   * @as(i64, g0;
+    var f6g1: i64 = f6   * @as(i64, g1;
+    var f6g2: i64 = f6   * @as(i64, g2;
+    var f6g3: i64 = f6   * @as(i64, g3;
+    var f6g4_19: i64 = f6   * @as(i64, g4_19;
+    var f6g5_19: i64 = f6   * @as(i64, g5_19;
+    var f6g6_19: i64 = f6   * @as(i64, g6_19;
+    var f6g7_19: i64 = f6   * @as(i64, g7_19;
+    var f6g8_19: i64 = f6   * @as(i64, g8_19;
+    var f6g9_19: i64 = f6   * @as(i64, g9_19;
+    var f7g0: i64 = f7   * @as(i64, g0;
+    var f7g1_2: i64 = f7_2 * @as(i64, g1;
+    var f7g2: i64 = f7   * @as(i64, g2;
+    var f7g3_38: i64 = f7_2 * @as(i64, g3_19;
+    var f7g4_19: i64 = f7   * @as(i64, g4_19;
+    var f7g5_38: i64 = f7_2 * @as(i64, g5_19;
+    var f7g6_19: i64 = f7   * @as(i64, g6_19;
+    var f7g7_38: i64 = f7_2 * @as(i64, g7_19;
+    var f7g8_19: i64 = f7   * @as(i64, g8_19;
+    var f7g9_38: i64 = f7_2 * @as(i64, g9_19;
+    var f8g0: i64 = f8   * @as(i64, g0;
+    var f8g1: i64 = f8   * @as(i64, g1;
+    var f8g2_19: i64 = f8   * @as(i64, g2_19;
+    var f8g3_19: i64 = f8   * @as(i64, g3_19;
+    var f8g4_19: i64 = f8   * @as(i64, g4_19;
+    var f8g5_19: i64 = f8   * @as(i64, g5_19;
+    var f8g6_19: i64 = f8   * @as(i64, g6_19;
+    var f8g7_19: i64 = f8   * @as(i64, g7_19;
+    var f8g8_19: i64 = f8   * @as(i64, g8_19;
+    var f8g9_19: i64 = f8   * @as(i64, g9_19;
+    var f9g0: i64 = f9   * @as(i64, g0;
+    var f9g1_38: i64 = f9_2 * @as(i64, g1_19;
+    var f9g2_19: i64 = f9   * @as(i64, g2_19;
+    var f9g3_38: i64 = f9_2 * @as(i64, g3_19;
+    var f9g4_19: i64 = f9   * @as(i64, g4_19;
+    var f9g5_38: i64 = f9_2 * @as(i64, g5_19;
+    var f9g6_19: i64 = f9   * @as(i64, g6_19;
+    var f9g7_38: i64 = f9_2 * @as(i64, g7_19;
+    var f9g8_19: i64 = f9   * @as(i64, g8_19;
+    var f9g9_38: i64 = f9_2 * @as(i64, g9_19;
+    var h0: i64 = f0g0 + f1g9_38 + f2g8_19 + f3g7_38 + f4g6_19 + f5g5_38 + f6g4_19 + f7g3_38 + f8g2_19 + f9g1_38;
+    var h1: i64 = f0g1 + f1g0   + f2g9_19 + f3g8_19 + f4g7_19 + f5g6_19 + f6g5_19 + f7g4_19 + f8g3_19 + f9g2_19;
+    var h2: i64 = f0g2 + f1g1_2 + f2g0   + f3g9_38 + f4g8_19 + f5g7_38 + f6g6_19 + f7g5_38 + f8g4_19 + f9g3_38;
+    var h3: i64 = f0g3 + f1g2   + f2g1   + f3g0   + f4g9_19 + f5g8_19 + f6g7_19 + f7g6_19 + f8g5_19 + f9g4_19;
+    var h4: i64 = f0g4 + f1g3_2 + f2g2   + f3g1_2 + f4g0   + f5g9_38 + f6g8_19 + f7g7_38 + f8g6_19 + f9g5_38;
+    var h5: i64 = f0g5 + f1g4   + f2g3   + f3g2   + f4g1   + f5g0   + f6g9_19 + f7g8_19 + f8g7_19 + f9g6_19;
+    var h6: i64 = f0g6 + f1g5_2 + f2g4   + f3g3_2 + f4g2   + f5g1_2 + f6g0   + f7g9_38 + f8g8_19 + f9g7_38;
+    var h7: i64 = f0g7 + f1g6   + f2g5   + f3g4   + f4g3   + f5g2   + f6g1   + f7g0   + f8g9_19 + f9g8_19;
+    var h8: i64 = f0g8 + f1g7_2 + f2g6   + f3g5_2 + f4g4   + f5g3_2 + f6g2   + f7g1_2 + f8g0   + f9g9_38;
+    var h9: i64 = f0g9 + f1g8   + f2g7   + f3g6   + f4g5   + f5g4   + f6g3   + f7g2   + f8g1   + f9g0   ;
+    var carry0: i64 = undefined;
+    var carry1: i64 = undefined;
+    var carry2: i64 = undefined;
+    var carry3: i64 = undefined;
+    var carry4: i64 = undefined;
+    var carry5: i64 = undefined;
+    var carry6: i64 = undefined;
+    var carry7: i64 = undefined;
+    var carry8: i64 = undefined;
+    var carry9: i64 = undefined;
+
+    carry0 = (h0 + @as(i64, 1 << 25)) >> 26;
+    h1 += carry0;
+    h0 -= carry0 << 26;
+    carry4 = (h4 + @as(i64, 1 << 25)) >> 26;
+    h5 += carry4;
+    h4 -= carry4 << 26;
+
+    carry1 = (h1 + @as(i64, 1 << 24)) >> 25;
+    h2 += carry1;
+    h1 -= carry1 << 25;
+    carry5 = (h5 + @as(i64, 1 << 24)) >> 25;
+    h6 += carry5;
+    h5 -= carry5 << 25;
+
+    carry2 = (h2 + @as(i64, 1 << 25)) >> 26;
+    h3 += carry2;
+    h2 -= carry2 << 26;
+    carry6 = (h6 + @as(i64, 1 << 25)) >> 26;
+    h7 += carry6;
+    h6 -= carry6 << 26;
+
+    carry3 = (h3 + @as(i64, 1 << 24)) >> 25;
+    h4 += carry3;
+    h3 -= carry3 << 25;
+    carry7 = (h7 + @as(i64, 1 << 24)) >> 25;
+    h8 += carry7;
+    h7 -= carry7 << 25;
+
+    carry4 = (h4 + @as(i64, 1 << 25)) >> 26;
+    h5 += carry4;
+    h4 -= carry4 << 26;
+    carry8 = (h8 + @as(i64, 1 << 25)) >> 26;
+    h9 += carry8;
+    h8 -= carry8 << 26;
+
+    carry9 = (h9 + @as(i64, 1 << 24)) >> 25;
+    h0 += carry9 * 19;
+    h9 -= carry9 << 25;
+
+    carry0 = (h0 + @as(i64, 1 << 25)) >> 26;
+    h1 += carry0;
+    h0 -= carry0 << 26;
+
+    h[0] = @as(i32, @intCast(h0));
+    h[1] = @as(i32, @intCast(h1));
+    h[2] = @as(i32, @intCast(h2));
+    h[3] = @as(i32, @intCast(h3));
+    h[4] = @as(i32, @intCast(h4));
+    h[5] = @as(i32, @intCast(h5));
+    h[6] = @as(i32, @intCast(h6));
+    h[7] = @as(i32, @intCast(h7));
+    h[8] = @as(i32, @intCast(h8));
+    h[9] = @as(i32, @intCast(h9));
+}
+
+
+
+
+pub fn fe_mul121666(h: *Fe, f: Fe) void {
+    var f0: i32 = f[0];
+    var f1: i32 = f[1];
+    var f2: i32 = f[2];
+    var f3: i32 = f[3];
+    var f4: i32 = f[4];
+    var f5: i32 = f[5];
+    var f6: i32 = f[6];
+    var f7: i32 = f[7];
+    var f8: i32 = f[8];
+    var f9: i32 = f[9];
+    var h0: i64 = f0 * @as(i64, 121666;
+    var h1: i64 = f1 * @as(i64, 121666;
+    var h2: i64 = f2 * @as(i64, 121666;
+    var h3: i64 = f3 * @as(i64, 121666;
+    var h4: i64 = f4 * @as(i64, 121666;
+    var h5: i64 = f5 * @as(i64, 121666;
+    var h6: i64 = f6 * @as(i64, 121666;
+    var h7: i64 = f7 * @as(i64, 121666;
+    var h8: i64 = f8 * @as(i64, 121666;
+    var h9: i64 = f9 * @as(i64, 121666;
+    var carry0: i64 = undefined;
+    var carry1: i64 = undefined;
+    var carry2: i64 = undefined;
+    var carry3: i64 = undefined;
+    var carry4: i64 = undefined;
+    var carry5: i64 = undefined;
+    var carry6: i64 = undefined;
+    var carry7: i64 = undefined;
+    var carry8: i64 = undefined;
+    var carry9: i64 = undefined;
+
+    carry9 = (h9 + @as(i64, 1<<24)) >> 25; h0 += carry9 * 19; h9 -= carry9 << 25;
+    carry1 = (h1 + @as(i64, 1<<24)) >> 25; h2 += carry1; h1 -= carry1 << 25;
+    carry3 = (h3 + @as(i64, 1<<24)) >> 25; h4 += carry3; h3 -= carry3 << 25;
+    carry5 = (h5 + @as(i64, 1<<24)) >> 25; h6 += carry5; h5 -= carry5 << 25;
+    carry7 = (h7 + @as(i64, 1<<24)) >> 25; h8 += carry7; h7 -= carry7 << 25;
+
+    carry0 = (h0 + @as(i64, 1<<25)) >> 26; h1 += carry0; h0 -= carry0 << 26;
+    carry2 = (h2 + @as(i64, 1<<25)) >> 26; h3 += carry2; h2 -= carry2 << 26;
+    carry4 = (h4 + @as(i64, 1<<25)) >> 26; h5 += carry4; h4 -= carry4 << 26;
+    carry6 = (h6 + @as(i64, 1<<25)) >> 26; h7 += carry6; h6 -= carry6 << 26;
+    carry8 = (h8 + @as(i64, 1<<25)) >> 26; h9 += carry8; h8 -= carry8 << 26;
+
+    h[0] = @as(i32, @intCast(h0));
+    h[1] = @as(i32, @intCast(h1));
+    h[2] = @as(i32, @intCast(h2));
+    h[3] = @as(i32, @intCast(h3));
+    h[4] = @as(i32, @intCast(h4));
+    h[5] = @as(i32, @intCast(h5));
+    h[6] = @as(i32, @intCast(h6));
+    h[7] = @as(i32, @intCast(h7));
+    h[8] = @as(i32, @intCast(h8));
+    h[9] = @as(i32, @intCast(h9));
+}
+
+
+
+
+pub fn fe_neg(h: *Fe, f: Fe) void {
+    var f0: i32 = f[0];
+    var f1: i32 = f[1];
+    var f2: i32 = f[2];
+    var f3: i32 = f[3];
+    var f4: i32 = f[4];
+    var f5: i32 = f[5];
+    var f6: i32 = f[6];
+    var f7: i32 = f[7];
+    var f8: i32 = f[8];
+    var f9: i32 = f[9];
+    var h0: i32 = -f0;
+    var h1: i32 = -f1;
+    var h2: i32 = -f2;
+    var h3: i32 = -f3;
+    var h4: i32 = -f4;
+    var h5: i32 = -f5;
+    var h6: i32 = -f6;
+    var h7: i32 = -f7;
+    var h8: i32 = -f8;
+    var h9: i32 = -f9;
+
+    h[0] = h0;
+    h[1] = h1;
+    h[2] = h2;
+    h[3] = h3;
+    h[4] = h4;
+    h[5] = h5;
+    h[6] = h6;
+    h[7] = h7;
+    h[8] = h8;
+    h[9] = h9;
+}
+
+
+pub fn fe_pow22523(out: *Fe, z: Fe) void {
+    var t0: Fe = undefined;
+    var t1: Fe = undefined;
+    var t2: Fe = undefined;
+    var i: i32 = undefined;
+    fe_sq(t0, z);
+
+    
+
+    fe_sq(t1, t0);
+
+    for (0..1) |_| {
+        fe_sq(t1, t1);
+    }
+
+    fe_mul(t1, z, t1);
+    fe_mul(t0, t0, t1);
+    fe_sq(t0, t0);
+
+    
+
+    fe_mul(t0, t1, t0);
+    fe_sq(t1, t0);
+
+    for (0..4) |_| {
+        fe_sq(t1, t1);
+    }
+
+    fe_mul(t0, t1, t0);
+    fe_sq(t1, t0);
+
+    for (0..9) |_| {
+        fe_sq(t1, t1);
+    }
+
+    fe_mul(t1, t1, t0);
+    fe_sq(t2, t1);
+
+    for (0..19) |_| {
+        fe_sq(t2, t2);
+    }
+
+    fe_mul(t1, t2, t1);
+    fe_sq(t1, t1);
+
+    for (0..9) |_| {
+        fe_sq(t1, t1);
+    }
+
+    fe_mul(t0, t1, t0);
+    fe_sq(t1, t0);
+
+    for (0..49) |_| {
+        fe_sq(t1, t1);
+    }
+
+    fe_mul(t1, t1, t0);
+    fe_sq(t2, t1);
+
+    for (0..99) |_| {
+        fe_sq(t2, t2);
+    }
+
+    fe_mul(t1, t2, t1);
+    fe_sq(t1, t1);
+
+    for (0..49) |_| {
+        fe_sq(t1, t1);
+    }
+
+    fe_mul(t0, t1, t0);
+    fe_sq(t0, t0);
+
+    for (0..1) |_| {
+        fe_sq(t0, t0);
+    }
+
+    fe_mul(out, t0, z);
+    return;
+}
+
+
+
+
+
+
+pub fn fe_sq(h: *Fe, f: Fe) void {
+    var f0: i32 = f[0];
+    var f1: i32 = f[1];
+    var f2: i32 = f[2];
+    var f3: i32 = f[3];
+    var f4: i32 = f[4];
+    var f5: i32 = f[5];
+    var f6: i32 = f[6];
+    var f7: i32 = f[7];
+    var f8: i32 = f[8];
+    var f9: i32 = f[9];
+    var f0_2: i32 = 2 * f0;
+    var f1_2: i32 = 2 * f1;
+    var f2_2: i32 = 2 * f2;
+    var f3_2: i32 = 2 * f3;
+    var f4_2: i32 = 2 * f4;
+    var f5_2: i32 = 2 * f5;
+    var f6_2: i32 = 2 * f6;
+    var f7_2: i32 = 2 * f7;
+    var f5_38: i32 = 38 * f5;
+    var f6_19: i32 = 19 * f6;
+    var f7_38: i32 = 38 * f7;
+    var f8_19: i32 = 19 * f8;
+    var f9_38: i32 = 38 * f9;
+    var f0f0: i64 = f0   * @as(i64, f0;
+    var f0f1_2: i64 = f0_2 * @as(i64, f1;
+    var f0f2_2: i64 = f0_2 * @as(i64, f2;
+    var f0f3_2: i64 = f0_2 * @as(i64, f3;
+    var f0f4_2: i64 = f0_2 * @as(i64, f4;
+    var f0f5_2: i64 = f0_2 * @as(i64, f5;
+    var f0f6_2: i64 = f0_2 * @as(i64, f6;
+    var f0f7_2: i64 = f0_2 * @as(i64, f7;
+    var f0f8_2: i64 = f0_2 * @as(i64, f8;
+    var f0f9_2: i64 = f0_2 * @as(i64, f9;
+    var f1f1_2: i64 = f1_2 * @as(i64, f1;
+    var f1f2_2: i64 = f1_2 * @as(i64, f2;
+    var f1f3_4: i64 = f1_2 * @as(i64, f3_2;
+    var f1f4_2: i64 = f1_2 * @as(i64, f4;
+    var f1f5_4: i64 = f1_2 * @as(i64, f5_2;
+    var f1f6_2: i64 = f1_2 * @as(i64, f6;
+    var f1f7_4: i64 = f1_2 * @as(i64, f7_2;
+    var f1f8_2: i64 = f1_2 * @as(i64, f8;
+    var f1f9_76: i64 = f1_2 * @as(i64, f9_38;
+    var f2f2: i64 = f2   * @as(i64, f2;
+    var f2f3_2: i64 = f2_2 * @as(i64, f3;
+    var f2f4_2: i64 = f2_2 * @as(i64, f4;
+    var f2f5_2: i64 = f2_2 * @as(i64, f5;
+    var f2f6_2: i64 = f2_2 * @as(i64, f6;
+    var f2f7_2: i64 = f2_2 * @as(i64, f7;
+    var f2f8_38: i64 = f2_2 * @as(i64, f8_19;
+    var f2f9_38: i64 = f2   * @as(i64, f9_38;
+    var f3f3_2: i64 = f3_2 * @as(i64, f3;
+    var f3f4_2: i64 = f3_2 * @as(i64, f4;
+    var f3f5_4: i64 = f3_2 * @as(i64, f5_2;
+    var f3f6_2: i64 = f3_2 * @as(i64, f6;
+    var f3f7_76: i64 = f3_2 * @as(i64, f7_38;
+    var f3f8_38: i64 = f3_2 * @as(i64, f8_19;
+    var f3f9_76: i64 = f3_2 * @as(i64, f9_38;
+    var f4f4: i64 = f4   * @as(i64, f4;
+    var f4f5_2: i64 = f4_2 * @as(i64, f5;
+    var f4f6_38: i64 = f4_2 * @as(i64, f6_19;
+    var f4f7_38: i64 = f4   * @as(i64, f7_38;
+    var f4f8_38: i64 = f4_2 * @as(i64, f8_19;
+    var f4f9_38: i64 = f4   * @as(i64, f9_38;
+    var f5f5_38: i64 = f5   * @as(i64, f5_38;
+    var f5f6_38: i64 = f5_2 * @as(i64, f6_19;
+    var f5f7_76: i64 = f5_2 * @as(i64, f7_38;
+    var f5f8_38: i64 = f5_2 * @as(i64, f8_19;
+    var f5f9_76: i64 = f5_2 * @as(i64, f9_38;
+    var f6f6_19: i64 = f6   * @as(i64, f6_19;
+    var f6f7_38: i64 = f6   * @as(i64, f7_38;
+    var f6f8_38: i64 = f6_2 * @as(i64, f8_19;
+    var f6f9_38: i64 = f6   * @as(i64, f9_38;
+    var f7f7_38: i64 = f7   * @as(i64, f7_38;
+    var f7f8_38: i64 = f7_2 * @as(i64, f8_19;
+    var f7f9_76: i64 = f7_2 * @as(i64, f9_38;
+    var f8f8_19: i64 = f8   * @as(i64, f8_19;
+    var f8f9_38: i64 = f8   * @as(i64, f9_38;
+    var f9f9_38: i64 = f9   * @as(i64, f9_38;
+    var h0: i64 = f0f0  + f1f9_76 + f2f8_38 + f3f7_76 + f4f6_38 + f5f5_38;
+    var h1: i64 = f0f1_2 + f2f9_38 + f3f8_38 + f4f7_38 + f5f6_38;
+    var h2: i64 = f0f2_2 + f1f1_2 + f3f9_76 + f4f8_38 + f5f7_76 + f6f6_19;
+    var h3: i64 = f0f3_2 + f1f2_2 + f4f9_38 + f5f8_38 + f6f7_38;
+    var h4: i64 = f0f4_2 + f1f3_4 + f2f2   + f5f9_76 + f6f8_38 + f7f7_38;
+    var h5: i64 = f0f5_2 + f1f4_2 + f2f3_2 + f6f9_38 + f7f8_38;
+    var h6: i64 = f0f6_2 + f1f5_4 + f2f4_2 + f3f3_2 + f7f9_76 + f8f8_19;
+    var h7: i64 = f0f7_2 + f1f6_2 + f2f5_2 + f3f4_2 + f8f9_38;
+    var h8: i64 = f0f8_2 + f1f7_4 + f2f6_2 + f3f5_4 + f4f4   + f9f9_38;
+    var h9: i64 = f0f9_2 + f1f8_2 + f2f7_2 + f3f6_2 + f4f5_2;
+    var carry0: i64 = undefined;
+    var carry1: i64 = undefined;
+    var carry2: i64 = undefined;
+    var carry3: i64 = undefined;
+    var carry4: i64 = undefined;
+    var carry5: i64 = undefined;
+    var carry6: i64 = undefined;
+    var carry7: i64 = undefined;
+    var carry8: i64 = undefined;
+    var carry9: i64 = undefined;
+    carry0 = (h0 + @as(i64, 1 << 25)) >> 26;
+    h1 += carry0;
+    h0 -= carry0 << 26;
+    carry4 = (h4 + @as(i64, 1 << 25)) >> 26;
+    h5 += carry4;
+    h4 -= carry4 << 26;
+    carry1 = (h1 + @as(i64, 1 << 24)) >> 25;
+    h2 += carry1;
+    h1 -= carry1 << 25;
+    carry5 = (h5 + @as(i64, 1 << 24)) >> 25;
+    h6 += carry5;
+    h5 -= carry5 << 25;
+    carry2 = (h2 + @as(i64, 1 << 25)) >> 26;
+    h3 += carry2;
+    h2 -= carry2 << 26;
+    carry6 = (h6 + @as(i64, 1 << 25)) >> 26;
+    h7 += carry6;
+    h6 -= carry6 << 26;
+    carry3 = (h3 + @as(i64, 1 << 24)) >> 25;
+    h4 += carry3;
+    h3 -= carry3 << 25;
+    carry7 = (h7 + @as(i64, 1 << 24)) >> 25;
+    h8 += carry7;
+    h7 -= carry7 << 25;
+    carry4 = (h4 + @as(i64, 1 << 25)) >> 26;
+    h5 += carry4;
+    h4 -= carry4 << 26;
+    carry8 = (h8 + @as(i64, 1 << 25)) >> 26;
+    h9 += carry8;
+    h8 -= carry8 << 26;
+    carry9 = (h9 + @as(i64, 1 << 24)) >> 25;
+    h0 += carry9 * 19;
+    h9 -= carry9 << 25;
+    carry0 = (h0 + @as(i64, 1 << 25)) >> 26;
+    h1 += carry0;
+    h0 -= carry0 << 26;
+    h[0] = @as(i32, @intCast(h0));
+    h[1] = @as(i32, @intCast(h1));
+    h[2] = @as(i32, @intCast(h2));
+    h[3] = @as(i32, @intCast(h3));
+    h[4] = @as(i32, @intCast(h4));
+    h[5] = @as(i32, @intCast(h5));
+    h[6] = @as(i32, @intCast(h6));
+    h[7] = @as(i32, @intCast(h7));
+    h[8] = @as(i32, @intCast(h8));
+    h[9] = @as(i32, @intCast(h9));
+}
+
+
+
+
+
+
+pub fn fe_sq2(h: *Fe, f: Fe) void {
+    var f0: i32 = f[0];
+    var f1: i32 = f[1];
+    var f2: i32 = f[2];
+    var f3: i32 = f[3];
+    var f4: i32 = f[4];
+    var f5: i32 = f[5];
+    var f6: i32 = f[6];
+    var f7: i32 = f[7];
+    var f8: i32 = f[8];
+    var f9: i32 = f[9];
+    var f0_2: i32 = 2 * f0;
+    var f1_2: i32 = 2 * f1;
+    var f2_2: i32 = 2 * f2;
+    var f3_2: i32 = 2 * f3;
+    var f4_2: i32 = 2 * f4;
+    var f5_2: i32 = 2 * f5;
+    var f6_2: i32 = 2 * f6;
+    var f7_2: i32 = 2 * f7;
+    var f5_38: i32 = 38 * f5;
+    var f6_19: i32 = 19 * f6;
+    var f7_38: i32 = 38 * f7;
+    var f8_19: i32 = 19 * f8;
+    var f9_38: i32 = 38 * f9;
+    var f0f0: i64 = f0   * @as(i64, f0;
+    var f0f1_2: i64 = f0_2 * @as(i64, f1;
+    var f0f2_2: i64 = f0_2 * @as(i64, f2;
+    var f0f3_2: i64 = f0_2 * @as(i64, f3;
+    var f0f4_2: i64 = f0_2 * @as(i64, f4;
+    var f0f5_2: i64 = f0_2 * @as(i64, f5;
+    var f0f6_2: i64 = f0_2 * @as(i64, f6;
+    var f0f7_2: i64 = f0_2 * @as(i64, f7;
+    var f0f8_2: i64 = f0_2 * @as(i64, f8;
+    var f0f9_2: i64 = f0_2 * @as(i64, f9;
+    var f1f1_2: i64 = f1_2 * @as(i64, f1;
+    var f1f2_2: i64 = f1_2 * @as(i64, f2;
+    var f1f3_4: i64 = f1_2 * @as(i64, f3_2;
+    var f1f4_2: i64 = f1_2 * @as(i64, f4;
+    var f1f5_4: i64 = f1_2 * @as(i64, f5_2;
+    var f1f6_2: i64 = f1_2 * @as(i64, f6;
+    var f1f7_4: i64 = f1_2 * @as(i64, f7_2;
+    var f1f8_2: i64 = f1_2 * @as(i64, f8;
+    var f1f9_76: i64 = f1_2 * @as(i64, f9_38;
+    var f2f2: i64 = f2   * @as(i64, f2;
+    var f2f3_2: i64 = f2_2 * @as(i64, f3;
+    var f2f4_2: i64 = f2_2 * @as(i64, f4;
+    var f2f5_2: i64 = f2_2 * @as(i64, f5;
+    var f2f6_2: i64 = f2_2 * @as(i64, f6;
+    var f2f7_2: i64 = f2_2 * @as(i64, f7;
+    var f2f8_38: i64 = f2_2 * @as(i64, f8_19;
+    var f2f9_38: i64 = f2   * @as(i64, f9_38;
+    var f3f3_2: i64 = f3_2 * @as(i64, f3;
+    var f3f4_2: i64 = f3_2 * @as(i64, f4;
+    var f3f5_4: i64 = f3_2 * @as(i64, f5_2;
+    var f3f6_2: i64 = f3_2 * @as(i64, f6;
+    var f3f7_76: i64 = f3_2 * @as(i64, f7_38;
+    var f3f8_38: i64 = f3_2 * @as(i64, f8_19;
+    var f3f9_76: i64 = f3_2 * @as(i64, f9_38;
+    var f4f4: i64 = f4   * @as(i64, f4;
+    var f4f5_2: i64 = f4_2 * @as(i64, f5;
+    var f4f6_38: i64 = f4_2 * @as(i64, f6_19;
+    var f4f7_38: i64 = f4   * @as(i64, f7_38;
+    var f4f8_38: i64 = f4_2 * @as(i64, f8_19;
+    var f4f9_38: i64 = f4   * @as(i64, f9_38;
+    var f5f5_38: i64 = f5   * @as(i64, f5_38;
+    var f5f6_38: i64 = f5_2 * @as(i64, f6_19;
+    var f5f7_76: i64 = f5_2 * @as(i64, f7_38;
+    var f5f8_38: i64 = f5_2 * @as(i64, f8_19;
+    var f5f9_76: i64 = f5_2 * @as(i64, f9_38;
+    var f6f6_19: i64 = f6   * @as(i64, f6_19;
+    var f6f7_38: i64 = f6   * @as(i64, f7_38;
+    var f6f8_38: i64 = f6_2 * @as(i64, f8_19;
+    var f6f9_38: i64 = f6   * @as(i64, f9_38;
+    var f7f7_38: i64 = f7   * @as(i64, f7_38;
+    var f7f8_38: i64 = f7_2 * @as(i64, f8_19;
+    var f7f9_76: i64 = f7_2 * @as(i64, f9_38;
+    var f8f8_19: i64 = f8   * @as(i64, f8_19;
+    var f8f9_38: i64 = f8   * @as(i64, f9_38;
+    var f9f9_38: i64 = f9   * @as(i64, f9_38;
+    var h0: i64 = f0f0  + f1f9_76 + f2f8_38 + f3f7_76 + f4f6_38 + f5f5_38;
+    var h1: i64 = f0f1_2 + f2f9_38 + f3f8_38 + f4f7_38 + f5f6_38;
+    var h2: i64 = f0f2_2 + f1f1_2 + f3f9_76 + f4f8_38 + f5f7_76 + f6f6_19;
+    var h3: i64 = f0f3_2 + f1f2_2 + f4f9_38 + f5f8_38 + f6f7_38;
+    var h4: i64 = f0f4_2 + f1f3_4 + f2f2   + f5f9_76 + f6f8_38 + f7f7_38;
+    var h5: i64 = f0f5_2 + f1f4_2 + f2f3_2 + f6f9_38 + f7f8_38;
+    var h6: i64 = f0f6_2 + f1f5_4 + f2f4_2 + f3f3_2 + f7f9_76 + f8f8_19;
+    var h7: i64 = f0f7_2 + f1f6_2 + f2f5_2 + f3f4_2 + f8f9_38;
+    var h8: i64 = f0f8_2 + f1f7_4 + f2f6_2 + f3f5_4 + f4f4   + f9f9_38;
+    var h9: i64 = f0f9_2 + f1f8_2 + f2f7_2 + f3f6_2 + f4f5_2;
+    var carry0: i64 = undefined;
+    var carry1: i64 = undefined;
+    var carry2: i64 = undefined;
+    var carry3: i64 = undefined;
+    var carry4: i64 = undefined;
+    var carry5: i64 = undefined;
+    var carry6: i64 = undefined;
+    var carry7: i64 = undefined;
+    var carry8: i64 = undefined;
+    var carry9: i64 = undefined;
+    h0 += h0;
+    h1 += h1;
+    h2 += h2;
+    h3 += h3;
+    h4 += h4;
+    h5 += h5;
+    h6 += h6;
+    h7 += h7;
+    h8 += h8;
+    h9 += h9;
+    carry0 = (h0 + @as(i64, 1 << 25)) >> 26;
+    h1 += carry0;
+    h0 -= carry0 << 26;
+    carry4 = (h4 + @as(i64, 1 << 25)) >> 26;
+    h5 += carry4;
+    h4 -= carry4 << 26;
+    carry1 = (h1 + @as(i64, 1 << 24)) >> 25;
+    h2 += carry1;
+    h1 -= carry1 << 25;
+    carry5 = (h5 + @as(i64, 1 << 24)) >> 25;
+    h6 += carry5;
+    h5 -= carry5 << 25;
+    carry2 = (h2 + @as(i64, 1 << 25)) >> 26;
+    h3 += carry2;
+    h2 -= carry2 << 26;
+    carry6 = (h6 + @as(i64, 1 << 25)) >> 26;
+    h7 += carry6;
+    h6 -= carry6 << 26;
+    carry3 = (h3 + @as(i64, 1 << 24)) >> 25;
+    h4 += carry3;
+    h3 -= carry3 << 25;
+    carry7 = (h7 + @as(i64, 1 << 24)) >> 25;
+    h8 += carry7;
+    h7 -= carry7 << 25;
+    carry4 = (h4 + @as(i64, 1 << 25)) >> 26;
+    h5 += carry4;
+    h4 -= carry4 << 26;
+    carry8 = (h8 + @as(i64, 1 << 25)) >> 26;
+    h9 += carry8;
+    h8 -= carry8 << 26;
+    carry9 = (h9 + @as(i64, 1 << 24)) >> 25;
+    h0 += carry9 * 19;
+    h9 -= carry9 << 25;
+    carry0 = (h0 + @as(i64, 1 << 25)) >> 26;
+    h1 += carry0;
+    h0 -= carry0 << 26;
+    h[0] = @as(i32, @intCast(h0));
+    h[1] = @as(i32, @intCast(h1));
+    h[2] = @as(i32, @intCast(h2));
+    h[3] = @as(i32, @intCast(h3));
+    h[4] = @as(i32, @intCast(h4));
+    h[5] = @as(i32, @intCast(h5));
+    h[6] = @as(i32, @intCast(h6));
+    h[7] = @as(i32, @intCast(h7));
+    h[8] = @as(i32, @intCast(h8));
+    h[9] = @as(i32, @intCast(h9));
+}
+
+
+
+
+pub fn fe_sub(h: *Fe, f: Fe, g: Fe) void {
+    var f0: i32 = f[0];
+    var f1: i32 = f[1];
+    var f2: i32 = f[2];
+    var f3: i32 = f[3];
+    var f4: i32 = f[4];
+    var f5: i32 = f[5];
+    var f6: i32 = f[6];
+    var f7: i32 = f[7];
+    var f8: i32 = f[8];
+    var f9: i32 = f[9];
+    var g0: i32 = g[0];
+    var g1: i32 = g[1];
+    var g2: i32 = g[2];
+    var g3: i32 = g[3];
+    var g4: i32 = g[4];
+    var g5: i32 = g[5];
+    var g6: i32 = g[6];
+    var g7: i32 = g[7];
+    var g8: i32 = g[8];
+    var g9: i32 = g[9];
+    var h0: i32 = f0 - g0;
+    var h1: i32 = f1 - g1;
+    var h2: i32 = f2 - g2;
+    var h3: i32 = f3 - g3;
+    var h4: i32 = f4 - g4;
+    var h5: i32 = f5 - g5;
+    var h6: i32 = f6 - g6;
+    var h7: i32 = f7 - g7;
+    var h8: i32 = f8 - g8;
+    var h9: i32 = f9 - g9;
+
+    h[0] = h0;
+    h[1] = h1;
+    h[2] = h2;
+    h[3] = h3;
+    h[4] = h4;
+    h[5] = h5;
+    h[6] = h6;
+    h[7] = h7;
+    h[8] = h8;
+    h[9] = h9;
+}
+
+
+
+
+
+pub fn fe_tobytes(s: []u8, h: Fe) void {
+    var h0: i32 = h[0];
+    var h1: i32 = h[1];
+    var h2: i32 = h[2];
+    var h3: i32 = h[3];
+    var h4: i32 = h[4];
+    var h5: i32 = h[5];
+    var h6: i32 = h[6];
+    var h7: i32 = h[7];
+    var h8: i32 = h[8];
+    var h9: i32 = h[9];
+    var q: i32 = undefined;
+    var carry0: i32 = undefined;
+    var carry1: i32 = undefined;
+    var carry2: i32 = undefined;
+    var carry3: i32 = undefined;
+    var carry4: i32 = undefined;
+    var carry5: i32 = undefined;
+    var carry6: i32 = undefined;
+    var carry7: i32 = undefined;
+    var carry8: i32 = undefined;
+    var carry9: i32 = undefined;
+    q = (19 * h9 + ((@as(i32, 1) << 24)) >> 25;
+    q = (h0 + q) >> 26;
+    q = (h1 + q) >> 25;
+    q = (h2 + q) >> 26;
+    q = (h3 + q) >> 25;
+    q = (h4 + q) >> 26;
+    q = (h5 + q) >> 25;
+    q = (h6 + q) >> 26;
+    q = (h7 + q) >> 25;
+    q = (h8 + q) >> 26;
+    q = (h9 + q) >> 25;
+
+    h0 += 19 * q;
+
+    carry0 = h0 >> 26;
+    h1 += carry0;
+    h0 -= carry0 << 26;
+    carry1 = h1 >> 25;
+    h2 += carry1;
+    h1 -= carry1 << 25;
+    carry2 = h2 >> 26;
+    h3 += carry2;
+    h2 -= carry2 << 26;
+    carry3 = h3 >> 25;
+    h4 += carry3;
+    h3 -= carry3 << 25;
+    carry4 = h4 >> 26;
+    h5 += carry4;
+    h4 -= carry4 << 26;
+    carry5 = h5 >> 25;
+    h6 += carry5;
+    h5 -= carry5 << 25;
+    carry6 = h6 >> 26;
+    h7 += carry6;
+    h6 -= carry6 << 26;
+    carry7 = h7 >> 25;
+    h8 += carry7;
+    h7 -= carry7 << 25;
+    carry8 = h8 >> 26;
+    h9 += carry8;
+    h8 -= carry8 << 26;
+    carry9 = h9 >> 25;
+    h9 -= carry9 << 25;
+
+
+
+    s[0] = @as(u8, @truncate(h0 >> 0));
+    s[1] = @as(u8, @truncate(h0 >> 8));
+    s[2] = @as(u8, @truncate(h0 >> 16));
+    s[3] = @as(u8, @truncate((h0 >> 24) | (h1 << 2)));
+    s[4] = @as(u8, @truncate(h1 >> 6));
+    s[5] = @as(u8, @truncate(h1 >> 14));
+    s[6] = @as(u8, @truncate((h1 >> 22) | (h2 << 3)));
+    s[7] = @as(u8, @truncate(h2 >> 5));
+    s[8] = @as(u8, @truncate(h2 >> 13));
+    s[9] = @as(u8, @truncate((h2 >> 21) | (h3 << 5)));
+    s[10] = @as(u8, @truncate(h3 >> 3));
+    s[11] = @as(u8, @truncate(h3 >> 11));
+    s[12] = @as(u8, @truncate((h3 >> 19) | (h4 << 6)));
+    s[13] = @as(u8, @truncate(h4 >> 2));
+    s[14] = @as(u8, @truncate(h4 >> 10));
+    s[15] = @as(u8, @truncate(h4 >> 18));
+    s[16] = @as(u8, @truncate(h5 >> 0));
+    s[17] = @as(u8, @truncate(h5 >> 8));
+    s[18] = @as(u8, @truncate(h5 >> 16));
+    s[19] = @as(u8, @truncate((h5 >> 24) | (h6 << 1)));
+    s[20] = @as(u8, @truncate(h6 >> 7));
+    s[21] = @as(u8, @truncate(h6 >> 15));
+    s[22] = @as(u8, @truncate((h6 >> 23) | (h7 << 3)));
+    s[23] = @as(u8, @truncate(h7 >> 5));
+    s[24] = @as(u8, @truncate(h7 >> 13));
+    s[25] = @as(u8, @truncate((h7 >> 21) | (h8 << 4)));
+    s[26] = @as(u8, @truncate(h8 >> 4));
+    s[27] = @as(u8, @truncate(h8 >> 12));
+    s[28] = @as(u8, @truncate((h8 >> 20) | (h9 << 6)));
+    s[29] = @as(u8, @truncate(h9 >> 2));
+    s[30] = @as(u8, @truncate(h9 >> 10));
+    s[31] = @as(u8, @truncate(h9 >> 18));
+}
+

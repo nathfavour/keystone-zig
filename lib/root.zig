@@ -14,6 +14,7 @@ pub const thread = @import("thread.zig");
 pub const cpu = @import("cpu.zig");
 pub const mprv = @import("mprv.zig");
 pub const crypto = @import("crypto.zig");
+pub const ed25519 = @import("ed25519.zig");
 
 test {
     _ = csr;
