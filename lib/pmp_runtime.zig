@@ -38,10 +38,10 @@ var sm_region_id: RegionId = invalid_region;
 var os_region_id: RegionId = invalid_region;
 
 fn setBit(bitmap: *u32, n: u32) void {
-    bitmap.* |= @as(u32, 1) << n;
+    if (n < 32) bitmap.* |= @as(u32, 1) << @intCast(n);
 }
 fn unsetBit(bitmap: *u32, n: u32) void {
-    bitmap.* &= ~(@as(u32, 1) << n);
+    if (n < 32) bitmap.* &= ~(@as(u32, 1) << @intCast(n));
 }
 fn testBit(bitmap: u32, n: u32) bool {
     if (n >= 32) return false;
@@ -55,7 +55,7 @@ fn regionValid(rid: RegionId) bool {
 fn searchRightmostUnset(bitmap: u32, max: u32, mask: u32) i32 {
     var i: u32 = 0;
     var m = mask;
-    while (m < (@as(u32, 1) << max)) : (i += 1) {
+    while (m < (@as(u32, 1) << @intCast(@min(max, 31)))) : (i += 1) {
         if ((~bitmap & m) == m) return @intCast(i);
         m <<= 1;
     }

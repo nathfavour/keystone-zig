@@ -67,7 +67,7 @@ pub fn fillAttestationReport(report: *sbi.Report, enc: *const enclave.Enclave) v
 pub fn deriveSealingKey(key: *[sbi.SEALING_KEY_SIZE]u8, key_ident: usize, key_ident_size: usize, enclave_hash: *const [sbi.MDSIZE]u8) i32 {
     _ = key_ident;
     _ = key_ident_size;
-    @memcpy(key, enclave_hash);
+    @memcpy(key[0..sbi.MDSIZE], enclave_hash);
     @memset(key[sbi.MDSIZE..], 0x55);
     return 0;
 }

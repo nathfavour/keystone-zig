@@ -173,7 +173,7 @@ pub fn destroyEnclave(eid: u32) sbi.Error {
 
     enclave.getMut(eid).?.state = .destroying;
 
-    for (enclave.getMut(eid).?.regions) |*r| {
+    for (&enclave.getMut(eid).?.regions) |*r| {
         if (r.region_type == .invalid or r.region_type == .utm) continue;
         const rid = r.pmp_rid;
         const b = pmp_runtime.pmpRegionGetAddr(rid);
